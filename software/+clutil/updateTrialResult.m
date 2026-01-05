@@ -39,8 +39,8 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		dt.data.times.date(r.trialN) = datetime('now');
 	end
 
+	% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% ================================= lets check the results:
-
 	%% ================================ no touch and first training phases, give some random rewards
 	if r.anyTouch == false && matches(in.task, 'train') && r.phase <= 3
 		tt = vblEnd - r.randomRewardTimer;
@@ -64,11 +64,11 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			WaitSecs(0.75+rand);
 		end
 
-		%% ================================ no touch, just wait a bit
+	%% ================================ no touch, just wait a bit
 	elseif r.anyTouch == false
 		WaitSecs(1+rand);
 
-		%% ================================ correct
+	%% ================================ correct
 	elseif r.result == 1
 		r.summary = 'correct';
 		r.comments(end+1) = r.summary;
@@ -76,7 +76,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			giveReward(rM, in.rewardTime);
 			dt.data.rewards = dt.data.rewards + 1;
 		end
-		beep(aM, in.correctBeep, 0.1, in.audioVolume);
+		if in.audio; beep(aM, in.correctBeep, 0.1, in.audioVolume); end
 		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
 		update(dt, true, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
@@ -95,7 +95,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		WaitSecs(0.1);
 		r.randomRewardTimer = GetSecs;
 
-		%% ================================ incorrect
+	%% ================================ incorrect
 	elseif r.result == 0
 		r.summary = 'incorrect';
 		r.comments(end+1) = r.summary;
@@ -108,7 +108,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		drawBackground(sM,[1 0 0]);
 		if in.debug; drawText(sM,r.txt); end
 		flip(sM);
-		beep(aM, in.incorrectBeep, 0.5, in.audioVolume);
+		if in.audio; beep(aM, in.incorrectBeep, 0.5, in.audioVolume); end
 
 		r.phaseN = r.phaseN + 1;
 		r.trialW = r.trialW + 1;
@@ -118,7 +118,8 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		WaitSecs('YieldSecs',in.timeOut);
 		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
 		r.randomRewardTimer = GetSecs;
-		%% ================================ easy trial
+
+	%% ================================ easy trial
 	elseif r.result == -10
 		r.summary = 'easy-trial';
 		dt.data.easyTrials = dt.data.easyTrials + 1;
@@ -138,7 +139,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
 		r.randomRewardTimer = GetSecs;
 
-		%% ================================ otherwise
+	%% ================================ otherwise
 	else
 		r.summary = 'unknown';
 		r.comments(end+1) = r.summary;
@@ -161,6 +162,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
 		r.randomRewardTimer = GetSecs;
 	end
+	% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	%% ================================ logic for training staircase
 	r.phaseMax = max(r.phaseMax, r.phase);

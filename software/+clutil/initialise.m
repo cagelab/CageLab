@@ -11,9 +11,9 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	end
 	arguments (Output)
 		sM (1,1) screenManager % screen manager object
-		aM (1,1) audioManager
-		rM (1,1) PTBSimia.pumpManager
-		tM (1,1) touchManager
+		aM (1,1) audioManager % audio manager
+		rM (1,1) PTBSimia.pumpManager % reward manager
+		tM (1,1) touchManager % touchscreen manager
 		r struct % ongoing task parameters and variables
 		dt (1,1) touchData
 		in struct
@@ -51,7 +51,8 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	% initial config for PTB
 	PsychDefaultSetup(2);
 	
-	% Prevent the OS from blanking the display or entering power-save while experiments run.
+	% Prevent the OS from blanking the display or entering power-save 
+	% while experiments run.
 	if IsLinux
 		try system('xdotool key shift'); end
 		try system('xset s off'); end
@@ -63,6 +64,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	sM = screenManager('screen', in.screen,'blend', in.useBlending,...
 		'pixelsPerCm', in.density, 'distance', in.distance,...
 		'disableSyncTests', in.disableSync, 'hideFlash', true, ...
+		'useVulkan', in.useVulkan,...
 		'backgroundColour', in.bg,'windowed', windowed,'specialFlags', sf);
 	if in.smartBackground
 		r.sbg = imageStimulus('crop','stretch','alpha', 1, 'filePath', [in.folder filesep 'background' filesep bgName]);
@@ -79,8 +81,9 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	%% ============================ audio
 	% Prepare the audio manager, respecting silent-mode/debug flags, and preload feedback beeps.
 	aM = audioManager('device',in.audioDevice);
+	if in.audioVolume == 0; in.audio = false; end
 	if in.debug; aM.verbose = true; end
-	if in.audioVolume == 0 || in.audio == false
+	if in.audio == false
 		aM.silentMode = true; 
 	else
 		setup(aM);
@@ -217,8 +220,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	quitKey = KbName('escape');
 	shotKey = KbName('F1');
 	RestrictKeysForKbCheck([quitKey shotKey]);
-	Screen('Preference','Verbosity',4);	
-	if ~in.debug; Priority(MaxPriority(sM.win)); end
+	if ~in.debug && in.highPriority; Priority(MaxPriority(sM.win)); end
 	if ~in.debug || ~in.dummy; HideCursor; end
 
 	%% ============================ run variables
