@@ -164,6 +164,14 @@ function startThings(in)
 					if contains(in.trainingSet,"set a")
 						samples{oidx(2)}.filePath = samples{oidx(1)}.currentFile;
 						update(samples{oidx(2)});
+					elseif contains(in.trainingSet,"set b") && in.easyMode
+						if rand > r.correctRateRecent
+							samples{oidx(2)}.filePath = string(in.folder) + filesep + pfix(2);
+							update(samples{oidx(2)});
+						else
+							samples{oidx(2)}.filePath = samples{oidx(1)}.currentFile;
+							update(samples{oidx(2)});
+						end
 					else
 						samples{oidx(2)}.filePath = string(in.folder) + filesep + pfix(2);
 						update(samples{oidx(2)});
@@ -177,6 +185,7 @@ function startThings(in)
 					samples.fixationChoice = 2:4;
 					update(samples);
 			end
+			sampleNames = [string(samples{2}.filePath) string(samples{3}.filePath) string(samples{4}.filePath)];
 
 			%% ============================== initialise trial variables
 			r = clutil.initTrialVariables(r);

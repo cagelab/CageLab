@@ -264,6 +264,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	r.firstTouchTime = NaN;
 	r.startTime = NaN;
 	r.endTime = NaN;
+	r.sampleNames = [];
 	
 	%% task status set to true for cogmoteGO
 	% Update CogmoteGO dashboards so operators know the task is live before the first trial.

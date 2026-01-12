@@ -26,5 +26,6 @@ function r = initTrialVariables(r)
 	% text
 	r.summary = '';
 	r.txt = '';
+	r.sampleNames = [];
 	
 end
