@@ -209,9 +209,9 @@ function startTouchTraining(in)
 	catch ME
 		getReport(ME)
 		try writelines(sprintf("Error Touch: " + ME.Message), "~/cagelab-start.txt", WriteMode="append"); end
-		try r.status.updateStatusToStopped();end
+		try if in.remote; r.status.updateStatusToStopped();end;end
 		try clutil.broadcastTrial(in, r, dt, false); end
-		try system('xset s 300 dpms 600 0 0'); end
+		try if IsLinux; system('xset s 300 dpms 600 0 0'); end; end
 		try reset(target); end %#ok<*TRYNC>
 		try close(target); end
 		try close(r.fix); end

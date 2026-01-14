@@ -15,7 +15,9 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	drawTextNow(sM, 'FINISHED!');
 
 	%% change status for cogmoteGO
-	currentStatus = r.status.updateStatusToStopped();
+	if in.remote
+		try currentStatus = r.status.updateStatusToStopped(); end
+	end
 
 	%% reset and close stims and devices
 	try RestrictKeysForKbCheck([]); end

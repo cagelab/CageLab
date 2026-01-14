@@ -281,9 +281,9 @@ function startThings(in)
 	catch ME
 		getReport(ME)
 		try writelines(sprintf("Error Things: " + ME.Message), "~/cagelab-start.txt", WriteMode="append"); end
-		try r.status.updateStatusToStopped();end
+		try if in.remote; r.status.updateStatusToStopped();end;end
 		try clutil.broadcastTrial(in, r, dt, false); end
-		try system('xset s 300 dpms 600 0 0'); end
+		try if IsLinux; system('xset s 300 dpms 600 0 0'); end; end
 		try reset(samples); end %#ok<*TRYNC>
 		try reset(r.fix); end
 		try reset(r.rtarget); end
