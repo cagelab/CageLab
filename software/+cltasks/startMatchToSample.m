@@ -35,7 +35,9 @@ function startMatchToSample(in)
 	try
 		%% ============================subfunction for shared initialisation
 		%[sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
+		tic
 		[sM, aM, rM, tM, r, dt, in] = clutil.initialise(in, bgName, prefix);
+		toc
 
 		%% ============================task specific figures
 		switch lower(in.object)
@@ -108,7 +110,7 @@ function startMatchToSample(in)
 			in.distractorN = 0;
 			in.delayDistractors = false;
 			r.sampleTime = 1;
-			r.delayTime = 0.1;
+			r.delayTime = 0;
 		end
 
 		%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -121,8 +123,21 @@ function startMatchToSample(in)
 			sep = in.objectSep;
 			N = in.distractorN;
 			Y = in.distractorY;
-			targets.fixationChoice = 3;
 			switch N
+				case 0
+					[~,idx] = Shuffle([1 2]);
+					x = [-(sep/2) (sep/2)];
+					xy = [x; Y+rand Y-rand];
+					xy = xy(:,idx);
+					target.updateXY(xy(1,1), xy(2,1), true);
+					distractor1.updateXY(xy(1,2), xy(2,2), true);
+					if matches(in.task,"dnts")
+						targets.fixationChoice = 4;
+						targets.stimulusSets{4} = 4;
+					else
+						targets.fixationChoice = 3;
+						targets.stimulusSets{4} = 3;
+					end
 				case 1
 					[~,idx] = Shuffle([1 2]);
 					x = (0:sep:sep*N) - (sep*N/2);
@@ -133,6 +148,8 @@ function startMatchToSample(in)
 					targets.stimulusSets{4} = [3 4];
 					if matches(in.task,"dnts")
 						targets.fixationChoice = 4;
+					else
+						targets.fixationChoice = 3;
 					end
 				case 2
 					[~,idx] = Shuffle([1 2 3]);
@@ -145,6 +162,8 @@ function startMatchToSample(in)
 					targets.stimulusSets{4} = [3 4 5];
 					if matches(in.task,"dnts")
 						targets.fixationChoice = [4 5];
+					else
+						targets.fixationChoice = 3;
 					end
 				case 3
 					[~,idx] = Shuffle([1 2 3 4]);
@@ -158,6 +177,8 @@ function startMatchToSample(in)
 					targets.stimulusSets{4} = [3 4 5 6];
 					if matches(in.task,"dnts")
 						targets.fixationChoice = [4 5 6];
+					else
+						targets.fixationChoice = 3;
 					end
 				otherwise
 					[~,idx] = Shuffle([1 2 3 4 5]);
@@ -172,6 +193,8 @@ function startMatchToSample(in)
 					targets.stimulusSets{4} = [3 4 5 6 7];
 					if matches(in.task,"dnts")
 						targets.fixationChoice = [4 5 6 7];
+					else
+						targets.fixationChoice = 3;
 					end
 			end
 			try r.sampleNames = [string(sample.filePath) string(target.filePath) string(distractor1.filePath) string(distractor2.filePath) string(distractor3.filePath) string(distractor4.filePath)]; end

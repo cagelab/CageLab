@@ -268,10 +268,11 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	
 	%% task status set to true for cogmoteGO
 	% Update CogmoteGO dashboards so operators know the task is live before the first trial.
-	try
-		currentStatus = r.status.updateStatusToRunning();
-		disp('===>>> CogmoteGO Task Status: ');
-		disp(currentStatus.Body.Data);
+	if in.remote
+		try
+			currentStatus = r.status.updateStatusToRunning();
+			disp('===>>> CogmoteGO Task Status: ');disp(currentStatus.Body.Data);
+		end
 	end
 
 	%% broadcast the initial status to cogmoteGO
