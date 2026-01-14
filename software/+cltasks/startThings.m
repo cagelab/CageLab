@@ -185,7 +185,7 @@ function startThings(in)
 					samples.fixationChoice = 2:4;
 					update(samples);
 			end
-			sampleNames = [string(samples{2}.filePath) string(samples{3}.filePath) string(samples{4}.filePath)];
+			r.sampleNames = [string(samples{2}.filePath) string(samples{3}.filePath) string(samples{4}.filePath)];
 
 			%% ============================== initialise trial variables
 			r = clutil.initTrialVariables(r);

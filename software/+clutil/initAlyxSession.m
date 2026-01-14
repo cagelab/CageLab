@@ -29,7 +29,7 @@ function [session, success] = initAlyxSession(r, session)
 	alyx.login;
 	
 	% create new session folder and name
-	if ~exist(r.alyxPath)
+	if ~exist(r.alyxPath,'dir')
 		[path, id, dateID, name] = alyx.getALF(session.subjectName, session.labName, true);
 		url = alyx.newExp(path, id, session);
 	else

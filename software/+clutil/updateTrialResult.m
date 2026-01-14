@@ -70,7 +70,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ correct
 	elseif r.result == 1
-		r.summary = {'correct', r.sampleNames};
+		r.summary = ["correct", r.sampleNames];
 		r.comments(end+1) = r.summary;
 		if in.reward
 			giveReward(rM, in.rewardTime);
@@ -97,7 +97,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ incorrect
 	elseif r.result == 0
-		r.summary = {'incorrect', r.sampleNames};
+		r.summary = ["incorrect", r.sampleNames];
 		r.comments(end+1) = r.summary;
 		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
 		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
@@ -121,9 +121,9 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ easy trial
 	elseif r.result == -10
-		r.summary = {'easy-trial', r.sampleNames};;
-		dt.data.easyTrials = dt.data.easyTrials + 1;
+		r.summary = ["easy-trial", r.sampleNames];
 		r.comments(end+1) = r.summary;
+		dt.data.easyTrials = dt.data.easyTrials + 1;
 		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
 		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, (tM.tAll-tM.queueTime), r.value);
@@ -141,8 +141,8 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ otherwise
 	else
-		r.summary = {'unknown', r.sampleNames};
-		r.comments(end+1) = r.summary;
+		r.summary = ["unknown", r.sampleNames];
+		r.comments(end+1) = string(r.summary);
 		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
 		[r.correctRateRecent, r.correctRate] = getCorrectRate();

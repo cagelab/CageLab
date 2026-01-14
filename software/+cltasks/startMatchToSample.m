@@ -174,6 +174,7 @@ function startMatchToSample(in)
 						targets.fixationChoice = [4 5 6 7];
 					end
 			end
+			try r.sampleNames = [string(sample.filePath) string(target.filePath) string(distractor1.filePath) string(distractor2.filePath) string(distractor3.filePath) string(distractor4.filePath)]; end
 
 			if contains(in.taskType, 'training')
 				targets.stimulusSets{1} = [1 2 3];
