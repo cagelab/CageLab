@@ -1,8 +1,11 @@
 #!/usr/bin/env zsh
-# a script to try to update all CageLab software as CageLab requires
-# several repositories and tools, and these MUST be kept in sync
-# together. Also if a git folder is changed, a git pull can fail so
-# we must force reset them to ensure the latest version can be pulled.
+# a script to try to update all CageLab software as CageLab requires several
+# repositories and tools, and these MUST be kept in sync together. Also if a
+# git folder is changed, a git pull can fail so we must force reset them to
+# ensure the latest version can be pulled.
+#
+# This must be run on the individual remote system via ssh. Use ansible if you want to
+# automate the same operation amngst all reote systems simultaneously.
 
 # ensure our symlinks are up-to-date
 git -C ~/Code/Setup reset --hard
@@ -15,9 +18,10 @@ git -C ~/Code/Setup pull
 
 # ensure the main repos are force reset to the latest commit
 ~/bin/cagelab-reset-code.sh
+systemctl --user daemon-reload
 
 # update cogmoteGO
-curl -sS https://raw.githubusercontent.com/cagelab/cogmoteGO/main/install.sh | sh
+curl -sS --connect-timeout 5 --max-time 30 https://raw.githubusercontent.com/cagelab/cogmoteGO/main/install.sh | sh
 
 # update pixi which manages our command dependencies
 pixi self-update; pixi global sync; pixi global -v update
