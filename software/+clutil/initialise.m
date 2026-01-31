@@ -3,12 +3,13 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	% INITIALISE orchestrates the CageLab runtime by configuring display/audio/touch hardware,
 	% instantiating stimulus and reward managers, preparing Alyx bookkeeping, and returning the
 	% state structs (`sv`, `r`, `dt`, etc.) required for downstream task control.
-	
+
 	arguments (Input)
 		in struct
 		bgName (1,:) char {mustBeNonempty} % background image filename
 		prefix (1,:) char = '' % prefix to add to save name
 	end
+	
 	arguments (Output)
 		sM (1,1) screenManager % screen manager object
 		aM (1,1) audioManager % audio manager

@@ -7,10 +7,8 @@
 # This must be run on the individual remote system via ssh. Use ansible if you want to
 # automate the same operation amngst all reote systems simultaneously.
 
-# ensure our symlinks are up-to-date
-git -C ~/Code/Setup reset --hard
-git -C ~/Code/Setup clean -fd
-git -C ~/Code/Setup pull
+# ensure our symlinks are up-to-date, manaully pull Setup before just in case
+git -C ~/Code/Setup reset --hard && git -C ~/Code/Setup clean -fd && git -C ~/Code/Setup pull
 ~/Code/Setup/makelinks.sh
 
 # stop all CageLab services
@@ -18,6 +16,8 @@ git -C ~/Code/Setup pull
 
 # ensure the main repos are force reset to the latest commit
 ~/bin/cagelab-reset-code.sh
+
+# update systemd services
 systemctl --user daemon-reload
 
 # update cogmoteGO
@@ -27,10 +27,13 @@ curl -sS --connect-timeout 5 --max-time 30 https://raw.githubusercontent.com/cag
 pixi self-update; pixi global sync; pixi global -v update
 
 # update mediamtx
-eget bluenviron/mediamtx --to=/usr/local/bin
+[[ ! -x $(which eget) ]] && eget bluenviron/mediamtx --to=/usr/local/bin
 
-# update flatpak that installs OBS
+# update flatpak (how OBS is installed)
 flatpak update -y
+
+# just in case other git repos were updated, run makelinks.sh a second time
+~/Code/Setup/makelinks.sh
 
 # restart all CageLab services
 ~/bin/cagelab-start.sh

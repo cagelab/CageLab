@@ -133,15 +133,17 @@ function startTouchTraining(in)
 					sprintf("<%.2f>",tM.window.hold), sprintf("<%.1f>",tM.window.release));
 			end
 
-			% reset the touch window
+			%% ============================== reset the touch window
 			reset(tM); flush(tM);
 
+			%% ============================== initialise trial times etc.
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			vbl = flip(sM); 
 			r.vblInit = vbl + r.sv.ifi; %start is actually next flip
 			syncTime(tM, r.vblInit);
 			
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			%% TRIAL LOOP
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			while isempty(r.touchResponse) && vbl < r.vblInit + in.trialTime
 				if ~isempty(r.sbg); draw(r.sbg); end
@@ -172,6 +174,7 @@ function startTouchTraining(in)
 				if c(r.shotKey); sM.captureScreen; end
 			end
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+			%
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end

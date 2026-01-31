@@ -100,6 +100,12 @@ function startThings(in)
 		% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		while r.keepRunning
 			if r.phase > 20; r.phase = 20; end
+
+			%% ============================== initialise trial variables
+			r = clutil.initTrialVariables(r);
+			txt = '';
+			fail = false; hld = false;
+
 			xpos = positions(randperm(3)); % randomise the x position
 			%samples{2}.xPositionOut = xpos(1);
 			%samples{3}.xPositionOut = xpos(2);
@@ -186,11 +192,6 @@ function startThings(in)
 					update(samples);
 			end
 			r.sampleNames = [string(samples{2}.filePath) string(samples{3}.filePath) string(samples{4}.filePath)];
-
-			%% ============================== initialise trial variables
-			r = clutil.initTrialVariables(r);
-			txt = '';
-			fail = false; hld = false;
 
 			%% ============================== Wait for release
 			ensureTouchRelease(false);

@@ -116,6 +116,13 @@ function startMatchToSample(in)
 		%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		while r.keepRunning
+
+			%% ============================== initialise trial variables
+			r = clutil.initTrialVariables(r);
+			txt = '';
+			fail = false; hld = false;
+
+			%% ============================== trial setup
 			pedestal.xPositionOut = 0;
 			pedestal.yPositionOut = in.sampleY;
 			sample.xPositionOut = 0;
@@ -123,7 +130,7 @@ function startMatchToSample(in)
 			sep = in.objectSep;
 			N = in.distractorN;
 			Y = in.distractorY;
-			switch N
+			switch N % number of destractors
 				case 0
 					[~,idx] = Shuffle([1 2]);
 					x = [-(sep/2) (sep/2)];
@@ -230,11 +237,6 @@ function startMatchToSample(in)
 
 			update(targets);
 			update(delayDistractors);
-
-			%% ============================== initialise trial variables
-			r = clutil.initTrialVariables(r);
-			txt = '';
-			fail = false; hld = false;
 
 			%% ============================== Wait for release
 			ensureTouchRelease(false);
