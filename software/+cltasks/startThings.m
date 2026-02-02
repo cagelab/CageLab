@@ -171,7 +171,7 @@ function startThings(in)
 						samples{oidx(2)}.filePath = samples{oidx(1)}.currentFile;
 						update(samples{oidx(2)});
 					elseif contains(in.trainingSet,"set b") && in.easyMode
-						if rand > r.correctRateRecent
+						if rand <= r.correctRateRecent
 							samples{oidx(2)}.filePath = string(in.folder) + filesep + pfix(2);
 							update(samples{oidx(2)});
 						else
@@ -191,7 +191,7 @@ function startThings(in)
 					samples.fixationChoice = 2:4;
 					update(samples);
 			end
-			r.sampleNames = [string(samples{2}.filePath) string(samples{3}.filePath) string(samples{4}.filePath)];
+			r.sampleNames = [string(samples{2}.currentFile) string(samples{3}.currentFile) string(samples{4}.currentFile)];
 
 			%% ============================== Wait for release
 			ensureTouchRelease(false);

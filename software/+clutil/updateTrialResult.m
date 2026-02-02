@@ -2,17 +2,17 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 	% UPDATETRIALRESULT Processes the outcome of a trial, updates data, and provides feedback.
 	%
 	% Inputs:
-	%   in      - Configuration structure with task and reward parameters.
-	%   dt      - Data structure containing trial results and timing information.
+	%   in      - GUI input configuration structure with task and reward parameters.
+	%   dt      - Data structure containing touch trial results and timing information.
 	%   r       - Current trial state and result structure.
 	%   sM      - Screen manager for display and flipping.
-	%   tM      - Touch manager for managing visual assets.
+	%   tM      - Touch manager for managing touch screen.
 	%   rM      - Reward manager for controlling reward delivery.
-	%   aM       - Audio object for feedback sounds.
+	%   aM      - Audio object for feedback sounds.
 	%
 	% Outputs:
-	%   dt      - Updated data structure.
-	%   r       - Updated trial result structure.
+	%   dt      - Updated touch data structure.
+	%   r       - Updated trial state structure.
 	arguments(Input)
 		in struct
 		dt touchData
@@ -21,6 +21,10 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		tM (1,1) touchManager
 		rM (1,1) PTBSimia.pumpManager
 		aM (1,1) audioManager
+	end
+	arguments(Output)
+		dt
+		r
 	end
 
 	sbg = r.sbg; rtarget = r.rtarget; 
@@ -41,6 +45,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% ================================= lets check the results:
+
 	%% ================================ no touch and first training phases, give some random rewards
 	if r.anyTouch == false && matches(in.task, 'train') && r.phase <= 3
 		tt = vblEnd - r.randomRewardTimer;
@@ -200,13 +205,18 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		tt=tic;
 		save(r.saveName, 'dt', 'r', 'in', 'tM', '-v7.3');
 		disp('=========================================');
-		fprintf('===> Saving data to %s in %.2fsecs\n', r.saveName, toc(tt));
+		fprintf('===> Saving data to %s in %.2fsecs\n', "~/ongoingTaskRun.mat", toc(tt));
 		disp('=========================================');
 		save("~/ongoingTaskRun.mat", 'dt', '-v7.3');
 	end
 
 	%% ================================== check if a command was sent from control system
 	r = clutil.checkMessages(r);
+
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%% ================================== SUBFUNCTIONS
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	function txt = getResultsText()

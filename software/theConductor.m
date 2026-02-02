@@ -84,6 +84,8 @@ classdef theConductor < optickaCore
 			me=me@optickaCore(args); %superclass constructor
 			me.parseArgs(args,me.allowedProperties); %check remaining properties from varargin
 
+			addOptickaToPath(); % ensure paths are up to date
+
 			me.version = clutil.version;
 			try setupPTB(me); end
 
