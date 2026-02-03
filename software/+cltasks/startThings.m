@@ -104,7 +104,7 @@ function startThings(in)
 			%% ============================== initialise trial variables
 			r = clutil.initTrialVariables(r);
 			txt = '';
-			fail = false; hld = false;
+			fail = false; hld = false; 
 
 			xpos = positions(randperm(3)); % randomise the x position
 			%samples{2}.xPositionOut = xpos(1);
@@ -170,17 +170,22 @@ function startThings(in)
 					if contains(in.trainingSet,"set a")
 						samples{oidx(2)}.filePath = samples{oidx(1)}.currentFile;
 						update(samples{oidx(2)});
+						r.easyTrial = true;
 					elseif contains(in.trainingSet,"set b") && in.easyMode
-						if rand <= r.correctRateRecent
+						randN = rand;
+						if (r.correctRateRecent > 0.75) || randN > (1 - r.correctRateRecent)
 							samples{oidx(2)}.filePath = string(in.folder) + filesep + pfix(2);
 							update(samples{oidx(2)});
+							r.easyTrial = false;
 						else
 							samples{oidx(2)}.filePath = samples{oidx(1)}.currentFile;
 							update(samples{oidx(2)});
+							r.easyTrial = true;
 						end
 					else
 						samples{oidx(2)}.filePath = string(in.folder) + filesep + pfix(2);
 						update(samples{oidx(2)});
+						r.easyTrial = false;
 					end
 					showSet(samples, 1); % show all stimuli with pedestal
 				otherwise

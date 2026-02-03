@@ -19,7 +19,7 @@ function [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
 	end
 
 	% reset touch window for initial touch
-	% updateWindow(me,X,Y,radius,doNegation,negationBuffer,strict,init,hold,release)
+	% tM.updateWindow(X,Y,radius,doNegation,negationBuffer,strict,init,hold,release)
 	tM.updateWindow(in.initPosition(1), in.initPosition(2),r.fix.size/2,...
 		true, [], [], 5, in.initHoldTime, 1.0);
 	tM.exclusionZone = [];

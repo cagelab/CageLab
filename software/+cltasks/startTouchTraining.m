@@ -2,7 +2,8 @@ function startTouchTraining(in)
 	% startTouchTraining(in)
 	% Start a touch training task, using automated steps to train hold and release
 	% in comes from CageLab GUI or can be a struct with the following fields:
-	%   in.task = 'Simple' or 'Full' (default = 'Full')
+	%   in.task = 'train'
+	%   in.easyMode = 0 | 1 easy mode is only first 20 phases
 	%   in.stimulus = 'Picture' or 'Disc' (default = 'Picture')
 	%   in.fg = [0 0 0] (default) or [1 1 1]
 	%   in.minSize = minimum stimulus size in degrees (default = 2)
@@ -50,7 +51,7 @@ function startTouchTraining(in)
 		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = 5; pn = pn + 1;
 		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = 7; pn = pn + 1;
 		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = 11; pn = pn + 1;
-		if matches(in.task, 'Simple') % simple task
+		if in.easyMode % simple task
 			if r.phase > length(phases); r.phase = length(phases); end
 		else
 			%------------------ HOLD

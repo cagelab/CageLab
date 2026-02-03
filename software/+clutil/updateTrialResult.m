@@ -43,6 +43,14 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		dt.data.times.date(r.trialN) = datetime('now');
 	end
 
+	%% ================================= mark easy trials
+	if islogical(r.easyTrial) && r.easyTrial == true
+		wasEasy = "easy";
+	else
+		wasEasy = "normal";
+	end
+	fprintf('===> TRIAL DIFFICULTY: %s\n', wasEasy);
+
 	% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% ================================= lets check the results:
 
@@ -75,7 +83,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ correct
 	elseif r.result == 1
-		r.summary = ["correct", r.sampleNames];
+		r.summary = ["correct", wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
 		if in.reward
 			giveReward(rM, in.rewardTime);
@@ -102,7 +110,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ incorrect
 	elseif r.result == 0
-		r.summary = ["incorrect", r.sampleNames];
+		r.summary = ["incorrect", wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
 		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
 		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
@@ -126,7 +134,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ easy trial
 	elseif r.result == -10
-		r.summary = ["easy-trial", r.sampleNames];
+		r.summary = ["easy-trial", wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
 		dt.data.easyTrials = dt.data.easyTrials + 1;
 		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
@@ -146,7 +154,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ otherwise
 	else
-		r.summary = ["unknown", r.sampleNames];
+		r.summary = ["unknown", wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
 		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);

@@ -27,5 +27,6 @@ function r = initTrialVariables(r)
 	r.summary = '';
 	r.txt = '';
 	r.sampleNames = [];
+	r.easyTrial = NaN;
 	
 end
