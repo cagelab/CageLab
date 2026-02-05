@@ -19,7 +19,7 @@ function startTouchTraining(in)
 		%% ============================subfunction for shared initialisation
 		%[sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 		[sM, aM, rM, tM, r, dt, in] = clutil.initialise(in, bgName, prefix);
-		
+
 		%% ============================task specific figures
 		if matches(in.stimulus, 'Picture')
 			target = imageStimulus('size', in.maxSize, ...
@@ -43,24 +43,24 @@ function startTouchTraining(in)
 		phases = [];
 		%------------------ SIZE
 		for pn = 1:length(sz)
-			phases(pn).size = sz(pn); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = [0 0];
+			phases(pn).size = sz(pn); phases(pn).hold = 0.0; phases(pn).rel = NaN; phases(pn).pos = [0 0];
 		end
 		pn = length(phases) + 1;
 		%------------------ POSITION
-		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = 3; pn = pn + 1;
-		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = 5; pn = pn + 1;
-		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = 7; pn = pn + 1;
-		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = 3; phases(pn).pos = 11; pn = pn + 1;
+		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = NaN; phases(pn).pos = 3; pn = pn + 1;
+		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = NaN; phases(pn).pos = 5; pn = pn + 1;
+		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = NaN; phases(pn).pos = 7; pn = pn + 1;
+		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = NaN; phases(pn).pos = 11; pn = pn + 1;
 		if in.easyMode % simple task
 			if r.phase > length(phases); r.phase = length(phases); end
 		else
+			
 			%------------------ HOLD
-			
 			for hld = linspace(0.01, 0.4, 12)
-				phases(pn).size = sz(end); phases(pn).hold = hld; phases(pn).rel = 3; phases(pn).pos = 5; pn = pn + 1;
+				phases(pn).size = sz(end); phases(pn).hold = hld; phases(pn).rel = NaN; phases(pn).pos = 5; pn = pn + 1;
 			end
+
 			%------------------ RELEASE
-			
 			for rel = linspace(3, 1, 6)
 				phases(pn).size = sz(end); phases(pn).hold = hld; phases(pn).rel = rel; phases(pn).pos = 5; pn = pn + 1;
 			end
@@ -77,7 +77,7 @@ function startTouchTraining(in)
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LOOP
 		while r.keepRunning
 
-			% get values from p phases structure
+			%% ===================================== get values from p phases structure
 			if r.phase > length(phases); r.phase = length(phases); end
 			if length(phases(r.phase).pos) == 2
 				x = phases(r.phase).pos(1);
@@ -99,14 +99,8 @@ function startTouchTraining(in)
 			else
 				radius = phases(r.phase).size / 2;
 			end
-			
-			% update touch target
-			% updateWindow(tM,X,Y,radius,doNegation,negationBuffer,strict,init,hold,release)
-			updateWindow(tM, x, y, radius,...
-				[], [], [], in.trialTime, hold, phases(r.phase).rel);
-			reset(tM); flush(tM);
 
-			% update visual target
+			%% ============================== update visual target
 			target.xPositionOut = x;
 			target.yPositionOut = y;
 			target.sizeOut = phases(r.phase).size;
@@ -121,8 +115,16 @@ function startTouchTraining(in)
 			txt = '';
 			fail = false; hld = false;
 
-			%% ============================== Wait for release
+			%% ============================== Wait for release (false means before trial)
 			ensureTouchRelease(false);
+
+			%% ===================================== update touch target
+			% updateWindow(X,Y,radius,doNegation,negationBuffer,strict,init,hold,release)
+			tM.updateWindow(x, y, radius,...
+				[], [], [], in.trialTime, hold, phases(r.phase).rel);
+
+			%% ============================== reset the touch window
+			reset(tM, true); flush(tM);
 
 			%% ============================== Get ready to start trial
 			if r.loopN == 1; dt.data.startTime = GetSecs; end
@@ -133,9 +135,6 @@ function startTouchTraining(in)
 					sprintf("<%.1f>",tM.window.radius), sprintf("<%.2f>",tM.window.init),...
 					sprintf("<%.2f>",tM.window.hold), sprintf("<%.1f>",tM.window.release));
 			end
-
-			%% ============================== reset the touch window
-			reset(tM); flush(tM);
 
 			%% ============================== initialise trial times etc.
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
@@ -194,7 +193,7 @@ function startTouchTraining(in)
 				r.result = -1; %unknown error
 			end
 
-			%% ============================== Ensure release of touch screen
+			%% ============================== Ensure release of touch screen (true means after trial)
 			ensureTouchRelease(true);
 
 			%% ============================== update this trials reults

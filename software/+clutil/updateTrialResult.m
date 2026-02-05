@@ -83,15 +83,15 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ correct
 	elseif r.result == 1
-		r.summary = ["correct", wasEasy, r.sampleNames];
+		r.summary = ["correct", string(r.result), wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
 		if in.reward
 			giveReward(rM, in.rewardTime);
 			dt.data.rewards = dt.data.rewards + 1;
 		end
 		if in.audio; beep(aM, in.correctBeep, 0.1, in.audioVolume); end
-		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
-		update(dt, true, r.phase, r.trialN, r.reactionTime, r.stimulus,...
+		% update(result,resultValue,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
+		dt.update(true, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
 		[r.correctRateRecent, r.correctRate] = getCorrectRate();
 		r.txt = getResultsText();
@@ -110,11 +110,11 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ incorrect
 	elseif r.result == 0
-		r.summary = ["incorrect", wasEasy, r.sampleNames];
+		r.summary = ["incorrect", string(r.result), wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
-		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
-		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
-			r.summary, tM.xAll, tM.yAll, (tM.tAll-tM.queueTime), r.value);
+		% update(result,resultValue,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
+		dt.update(true, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
+			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
 		[r.correctRateRecent, r.correctRate] = getCorrectRate();
 		r.txt = getResultsText();
 
@@ -134,12 +134,12 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ easy trial
 	elseif r.result == -10
-		r.summary = ["easy-trial", wasEasy, r.sampleNames];
+		r.summary = ["easy-trial", string(r.result), wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
 		dt.data.easyTrials = dt.data.easyTrials + 1;
-		% update(me,result,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
-		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
-			r.summary, tM.xAll, tM.yAll, (tM.tAll-tM.queueTime), r.value);
+		% update(result,resultValue,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
+		dt.update(true, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
+			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
 		[r.correctRateRecent, r.correctRate] = getCorrectRate();
 		r.txt = getResultsText();
 
@@ -154,9 +154,10 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 	%% ================================ otherwise
 	else
-		r.summary = ["unknown", wasEasy, r.sampleNames];
+		r.summary = ["unknown", string(r.result), wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
-		update(dt, false, r.phase, r.trialN, r.reactionTime, r.stimulus,...
+		% update(result,resultValue,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
+		dt.update(true, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
 		[r.correctRateRecent, r.correctRate] = getCorrectRate();
 		r.txt = getResultsText();
