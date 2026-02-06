@@ -53,6 +53,7 @@ function startTouchTraining(in)
 		phases(pn).size = sz(end); phases(pn).hold = 0.0; phases(pn).rel = NaN; phases(pn).pos = 11; pn = pn + 1;
 		if in.easyMode % simple task
 			if r.phase > length(phases); r.phase = length(phases); end
+			isReleasePhase = Inf;
 		else
 			
 			%------------------ HOLD
@@ -61,6 +62,7 @@ function startTouchTraining(in)
 			end
 
 			%------------------ RELEASE
+			isReleasePhase = pn;
 			for rel = linspace(3, 1, 6)
 				phases(pn).size = sz(end); phases(pn).hold = hld; phases(pn).rel = rel; phases(pn).pos = 5; pn = pn + 1;
 			end
@@ -115,16 +117,10 @@ function startTouchTraining(in)
 			txt = '';
 			fail = false; hld = false;
 
-			%% ============================== Wait for release (false means before trial)
-			ensureTouchRelease(false);
-
 			%% ===================================== update touch target
 			% updateWindow(X,Y,radius,doNegation,negationBuffer,strict,init,hold,release)
 			tM.updateWindow(x, y, radius,...
 				[], [], [], in.trialTime, hold, phases(r.phase).rel);
-
-			%% ============================== reset the touch window
-			reset(tM, true); flush(tM);
 
 			%% ============================== Get ready to start trial
 			if r.loopN == 1; dt.data.startTime = GetSecs; end
@@ -136,6 +132,12 @@ function startTouchTraining(in)
 					sprintf("<%.2f>",tM.window.hold), sprintf("<%.1f>",tM.window.release));
 			end
 
+			%% ============================== Wait for release (false means before trial)
+			ensureTouchRelease(false);
+
+			%% ============================== reset the touch window
+			reset(tM, false); flush(tM);
+
 			%% ============================== initialise trial times etc.
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			vbl = flip(sM); 
@@ -145,7 +147,8 @@ function startTouchTraining(in)
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			%% TRIAL LOOP
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			while isempty(r.touchResponse) && vbl < r.vblInit + in.trialTime
+			isReleased = isTouch(tM);
+			while isReleased && isempty(r.touchResponse) && vbl < r.vblInit + in.trialTime
 				if ~isempty(r.sbg); draw(r.sbg); end
 				if ~r.hldtime; draw(target); end
 				if r.hldtime && r.phase > 31; draw(r.fix); end
@@ -155,7 +158,7 @@ function startTouchTraining(in)
 					Screen('glPoint', sM.win, [1 0 0], xy(1), xy(2), 10);
 				end
 				vbl = flip(sM);
-				if r.phase < 3
+				if r.phase < isReleasePhase
 					[r.touchResponse, hld, r.hldtime, rel, reli, se, fail, tch] = testHold(tM,'yes','no');
 				else
 					[r.touchResponse, hld, r.hldtime, rel, reli, se, fail, tch] = testHoldRelease(tM,'yes','no');
@@ -185,7 +188,7 @@ function startTouchTraining(in)
 				r.trialN = r.trialN + 1; 
 			end
 			r.value = hld;
-			if fail || hld == -100 || matches(r.touchResponse,'no')
+			if r.value == -100 || fail || matches(r.touchResponse,'no')
 				r.result = 0; % incorrect
 			elseif matches(r.touchResponse,'yes')
 				r.result = 1; % correct
