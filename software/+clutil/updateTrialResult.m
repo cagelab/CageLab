@@ -98,7 +98,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 		animateRewardTarget(1);
 
-		fprintf('===> CORRECT :-) %s\n',r.txt);
+		fprintf('===> %i CORRECT {%s} :-) %s\n',r.result, r.summary(1), r.txt);
 
 		r.phaseN = r.phaseN + 1;
 		r.trialW = 0;
@@ -109,11 +109,15 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.randomRewardTimer = GetSecs;
 
 	%% ================================ incorrect
-	elseif r.result == 0
-		r.summary = ["incorrect", string(r.result), wasEasy, r.sampleNames];
+	elseif r.result == 0 || r.result == -5
+		if r.result == -5
+			r.summary = ["fail-initial-touch", string(r.result), wasEasy, r.sampleNames];
+		else
+			r.summary = ["incorrect", string(r.result), wasEasy, r.sampleNames];
+		end
 		r.comments = [r.comments r.summary];
 		% update(result,resultValue,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
-		dt.update(true, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
+		dt.update(false, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
 		[r.correctRateRecent, r.correctRate] = getCorrectRate();
 		r.txt = getResultsText();
@@ -126,27 +130,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.phaseN = r.phaseN + 1;
 		r.trialW = r.trialW + 1;
 
-		fprintf('===> FAIL :-( %s\n',r.txt);
-
-		WaitSecs('YieldSecs',in.timeOut);
-		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
-		r.randomRewardTimer = GetSecs;
-
-	%% ================================ easy trial
-	elseif r.result == -10
-		r.summary = ["easy-trial", string(r.result), wasEasy, r.sampleNames];
-		r.comments = [r.comments r.summary];
-		dt.data.easyTrials = dt.data.easyTrials + 1;
-		% update(result,resultValue,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
-		dt.update(true, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
-			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
-		[r.correctRateRecent, r.correctRate] = getCorrectRate();
-		r.txt = getResultsText();
-
-		if in.debug; drawText(sM,r.txt); end
-		flip(sM);
-
-		fprintf('===> EASY TRIAL :-| %s\n',r.txt);
+		fprintf('===> %i FAIL {%s} :-( %s\n', r.result, r.summary(1), r.txt);
 
 		WaitSecs('YieldSecs',in.timeOut);
 		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
@@ -157,7 +141,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.summary = ["unknown", string(r.result), wasEasy, r.sampleNames];
 		r.comments = [r.comments r.summary];
 		% update(result,resultValue,phase,trials,rt,stimulus,info,xAll,yAll,tAll,value)
-		dt.update(true, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
+		dt.update(false, r.result, r.phase, r.trialN, r.reactionTime, r.stimulus,...
 			r.summary, tM.xAll, tM.yAll, tM.tAll-tM.queueTime, r.value);
 		[r.correctRateRecent, r.correctRate] = getCorrectRate();
 		r.txt = getResultsText();
@@ -170,7 +154,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.phaseN = r.phaseN + 1;
 		r.trialW = r.trialW + 1;
 
-		fprintf('===> UNKNOWN :-| %s\n',r.txt);
+		fprintf('===> %i UNKNOWN {%s} :-| %s\n', r.result, r.summary(1), r.txt);
 
 		WaitSecs('YieldSecs',in.timeOut);
 		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
@@ -230,7 +214,8 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	function txt = getResultsText()
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		txt = sprintf('Loop=%i Trial=%i CorrectRate=%.1f Rewards=%i Random=%i Result=%i',r.loopN,r.trialN,r.correctRate,dt.data.rewards,dt.data.random,r.result);
+		txt = sprintf('Loop=%i Trial=%i CorrectRate=%.1f Rewards=%i Random=%i Result=%i',...
+		r.loopN,r.trialN,r.correctRate,dt.data.rewards,dt.data.random,r.result);
 	end
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

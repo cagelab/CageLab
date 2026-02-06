@@ -113,13 +113,13 @@ function startThings(in)
 			switch in.taskType
 				case 'training 1'
 					if r.phase>10;in.doNegation = false;tM.window.doNegation = false;end
-					samples{1}.alphaOut = phases(r.phase).pAlpha;
+					samples{1}.alphaOut = phases(r.phase).pAlpha; % pedestal
 					[choice, ooo] = randomTriplet();
 					alpha = repmat(phases(r.phase).dAlpha,1,3);
 					alpha(choice) = 1;
 					samples.fixationChoice = choice + 1;
 					xChoice = sM.toDegrees(samples{choice+1}.xPositionOut,'x');
-					samples{1}.xPositionOut = xChoice;
+					samples{1}.xPositionOut = xChoice; % move pedestal to fixation location of chosen sample
 					samples{2}.filePath = images(ooo(1));
 					samples{3}.filePath = images(ooo(2));
 					samples{4}.filePath = images(ooo(3));
@@ -134,13 +134,13 @@ function startThings(in)
 					samples{4}.angleOut = randi(360);
 					showSet(samples, 1); % show all stimuli with pedestal
 				case 'training 2'
-					samples{1}.alphaOut = phases(r.phase).pAlpha;
+					samples{1}.alphaOut = phases(r.phase).pAlpha; % pedestal
 					[choice, ooo] = randomTriplet();
 					alpha = repmat(phases(r.phase).dAlpha,1,3);
 					alpha(choice) = 1;
 					samples.fixationChoice = choice+1;
 					xChoice = sM.toDegrees(samples{choice+1}.xPositionOut,'x');
-					samples{1}.xPositionOut = xChoice;
+					samples{1}.xPositionOut = xChoice; % move pedestal to fixation location of chosen sample
 					samples{2}.filePath = string(in.folder) + filesep + "fractals" + filesep + pfix(ooo(1));
 					samples{3}.filePath = string(in.folder) + filesep + "fractals" + filesep + pfix(ooo(2));
 					samples{4}.filePath = string(in.folder) + filesep + "fractals" + filesep + pfix(ooo(3));
@@ -263,7 +263,9 @@ function startThings(in)
 			r.value = hld;
 			
 			%% ============================== check logic of task result
-			if fail || hld == -100 || matches(r.touchResponse,'no') || matches(r.touchInit,'no')
+			if matches(r.touchInit,'no')
+				r.result = -5;
+			elseif fail || hld == -100 || matches(r.touchResponse,'no')
 				r.result = 0;
 			elseif matches(r.touchResponse,'yes')
 				r.result = 1;

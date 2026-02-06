@@ -71,5 +71,5 @@ function [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
 	end
 	if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 	flip(sM);
-	flush(tM);
+	flush(tM);reset(tM);
 end

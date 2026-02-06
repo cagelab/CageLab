@@ -134,8 +134,6 @@ function startTouchTraining(in)
 
 			%% ============================== Wait for release (false means before trial)
 			ensureTouchRelease(false);
-
-			%% ============================== reset the touch window
 			reset(tM, false); flush(tM);
 
 			%% ============================== initialise trial times etc.

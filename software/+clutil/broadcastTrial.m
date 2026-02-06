@@ -11,6 +11,13 @@ function broadcastTrial(in, r, dt, isRunning)
 	end
 
 	tdata = [];
+	sid = split(r.alyxPath, filesep);
+	if length(sid) >= 3
+		sid = string(join(sid(end-2:end),filesep));
+	else
+		sid = r.alyxPath;
+	end
+
 	try
 		tdata = struct('task',in.task,'name',in.name,'is_running',isRunning,...
 		'loop_id',r.loopN,'trial_id',r.trialN,...
@@ -18,19 +25,17 @@ function broadcastTrial(in, r, dt, isRunning)
 		'correct_rate_last10', r.correctRateRecent, 'correct_rate', r.correctRate,...
 		'result', r.result, 'reaction_time', r.reactionTime, 'phase', r.phase,...
 		'random_rewards', dt.data.random,...
-		'start_time', r.startTime, 'end_time', r.endTime,...
 		'now', string(datetime('now')),...
-		'session_id', r.alyxPath,...
+		'session_id', sid,...
 		'hostname', r.hostname, 'version', r.version,...
 		'comment', r.comments(end),...
 		'session', in.session.sessionURL);
+		if ~isempty(tdata)
+			r.broadcast.send(tdata); 
+		end
 	catch ME
 		% Log the error message if an exception occurs
 		disp(['Error in broadcastTrial: ', ME.message]);
-	end
-
-	if ~isempty(tdata)
-		r.broadcast.send(tdata); 
 	end
 
 end

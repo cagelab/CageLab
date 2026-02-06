@@ -338,7 +338,9 @@ function startMatchToSample(in)
 			r.value = hld;
 
 			%% ============================== check logic of task result
-			if fail || hld == -100 || matches(r.touchResponse,'no') || matches(r.touchInit,'no')
+			if matches(r.touchInit,'no')
+				r.result = -5;	
+			elseif fail || hld == -100 || matches(r.touchResponse,'no')
 				r.result = 0;
 			elseif matches(r.touchResponse,'yes')
 				r.result = 1;
