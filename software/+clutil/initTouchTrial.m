@@ -20,6 +20,7 @@ function [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
 
 	% reset touch window for initial touch
 	% tM.updateWindow(X,Y,radius,doNegation,negationBuffer,strict,init,hold,release)
+	flush(tM);reset(tM);
 	tM.updateWindow(in.initPosition(1), in.initPosition(2),r.fix.size/2,...
 		true, [], [], 5, in.initHoldTime, 1.0);
 	tM.exclusionZone = [];
@@ -64,12 +65,22 @@ function [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
 		r.touchInit, hld, fail, tch, vbl - vblInit);
 
 	%%% Wait for release
+	svbl = vbl; lp = 1; mid = 0;
 	while isTouch(tM)
-		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
-		if in.debug; drawText(sM,'Please release touchscreen...'); end
-		flip(sM);
+		if (vbl - svbl >= 1)
+			drawBackground(sM,[1 mid 1]);
+			if mod(lp,5) == 0; mid = abs(~mid); end
+		elseif ~isempty(r.sbg)
+			draw(r.sbg); 
+		else
+			drawBackground(sM, in.bg);
+		end
+		drawText(sM,'Please release touchscreen...');
+		vbl = flip(sM);
+		lp = lp +  1;
 	end
 	if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 	flip(sM);
 	flush(tM);reset(tM);
 end
+

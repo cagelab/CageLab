@@ -155,9 +155,10 @@ function startThings(in)
 					cidx = choice + 1; oidx = others + 1;
 					alpha = repmat(phases(r.phase).dAlpha,1,3);
 					alpha(choice) = 1;
-					samples.fixationChoice = choice+1;
+					samples.fixationChoice = cidx;
 					xChoice = samples{cidx}.xPositionOut / sM.ppd;
 					samples{1}.xPositionOut = xChoice;
+					fprintf('\n\n===Choice: %i (cidx: %i) XPos: %.2f, OOO: %s Others: %s\n', choice, cidx, xChoice, mat2str(ooo), mat2str(others));
 					update(samples{1});
 					samples{1}.alphaOut = phases(r.phase).pAlpha;
 					samples{2}.alphaOut = alpha(1);
@@ -206,7 +207,7 @@ function startThings(in)
 			[r, dt, r.vblInitT] = clutil.initTouchTrial(r, in, tM, sM, dt);
 
 			%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			% ============================== start the actual task
+			% ============================== start the actual stimulus presentation
 			if matches(string(r.touchInit),"yes")
 				
 				% update trial number as we enter actal trial
@@ -220,7 +221,7 @@ function startThings(in)
 				repmat(in.doNegation,1,length(x)), ones(1,length(x)), true(1,length(x)),...
 				repmat(in.trialTime,1,length(x)), ...
 				repmat(in.targetHoldTime,1,length(x)), ones(1,length(x)));
-
+				
 				%% Get our start time
 				if ~isempty(r.sbg); draw(r.sbg); end
 				vbl = flip(sM);
@@ -239,8 +240,8 @@ function startThings(in)
 						Screen('glPoint', sM.win, [1 0 0], xy(1), xy(2), 10);
 					end
 					vbl = flip(sM);
-					[r.touchResponse, hld, r.hldtime, rel, reli, se, fail, tch] = testHold(tM,'yes','no');
-					if tch
+					[r.touchResponse, hld, r.hldtime, rel, reli, se, fail, tch, negation] = testHold(tM,'yes','no');
+					if tch || negation
 						r.reactionTime = vbl - r.vblInit;
 						r.anyTouch = true;
 					end
@@ -256,8 +257,8 @@ function startThings(in)
 				end
 				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 			end
+			%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			
 			r.vblFinal = GetSecs;
 			r.value = hld;
@@ -319,27 +320,28 @@ function startThings(in)
 		others = [1 2 3];
 		others = others(others~=choice);
 	end
+	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% make sure the subject is NOT touching the screen
 	function ensureTouchRelease(afterResult)
 		if ~exist('afterResult','var'); afterResult = false; end
+		if ~afterResult; when="BEFORE"; else; when="AFTER"; end
 		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 		if in.debug; drawText(sM,'Please release touchscreen...'); end
-		svbl = flip(sM); blue = 0;
-		if ~afterResult; when="BEFORE"; else when="AFTER"; end
+		svbl = flip(sM); now = svbl; blue = 0;
 		while isTouch(tM)
-			now = WaitSecs(0.2);
-			fprintf("Subject holding screen %s trial end %.1fsecs...\n", when, now-svbl);
-			if now - svbl >= 1
+			if (now - svbl >= 1)
 				drawBackground(sM,[1 blue 1]);
 				flip(sM);
 				blue = abs(~blue);
 			end
-			if afterResult && now - svbl >= 3
+			if afterResult && now - svbl > 3
 				r.result = -1;
 				fprintf("INCORRECT: Subject kept holding screen %s trial for %.1fsecs...\n", when, now-svbl);
 				break;
 			end
+			now = WaitSecs(0.1);
+			fprintf("Subject holding screen %s trial end %.1fsecs...\n", when, now-svbl);
 		end
 		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 		flip(sM);

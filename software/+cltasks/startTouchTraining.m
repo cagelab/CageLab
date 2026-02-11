@@ -145,7 +145,7 @@ function startTouchTraining(in)
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			%% TRIAL LOOP
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-			isReleased = isTouch(tM);
+			isReleased = ~isTouch(tM);
 			while isReleased && isempty(r.touchResponse) && vbl < r.vblInit + in.trialTime
 				if ~isempty(r.sbg); draw(r.sbg); end
 				if ~r.hldtime; draw(target); end
@@ -161,7 +161,7 @@ function startTouchTraining(in)
 				else
 					[r.touchResponse, hld, r.hldtime, rel, reli, se, fail, tch] = testHoldRelease(tM,'yes','no');
 				end
-				if tch
+				if tch || tM.wasNegation
 					r.reactionTime = vbl - r.vblInit;
 					r.anyTouch = true;
 				end
@@ -195,13 +195,15 @@ function startTouchTraining(in)
 			end
 
 			%% ============================== Ensure release of touch screen (true means after trial)
-			ensureTouchRelease(true);
+			if ~fail; ensureTouchRelease(true); end
 
 			%% ============================== update this trials reults
 			% [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			[dt, r] = clutil.updateTrialResult(in, dt, r, sM, tM, rM, aM);
 
 			%% ============================== inter-trial pause
+			[~,~,c] = KbCheck();
+			if c(r.quitKey); r.keepRunning = false; break; end
 			WaitSecs('YieldSecs',in.ITI-(GetSecs-r.vblFinal));
 
 		end % while keepRunning
@@ -235,23 +237,23 @@ function startTouchTraining(in)
 	% make sure the subject is NOT touching the screen
 	function ensureTouchRelease(afterResult)
 		if ~exist('afterResult','var'); afterResult = false; end
+		if ~afterResult; when="BEFORE"; else; when="AFTER"; end
 		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 		if in.debug; drawText(sM,'Please release touchscreen...'); end
-		svbl = flip(sM); blue = 0;
-		if ~afterResult; when="BEFORE"; else when="AFTER"; end
+		svbl = flip(sM); now = svbl; blue = 0;
 		while isTouch(tM)
-			now = WaitSecs(0.2);
-			fprintf("Subject holding screen %s trial end %.1fsecs...\n", when, now-svbl);
-			if now - svbl >= 1
+			if (now - svbl >= 1)
 				drawBackground(sM,[1 blue 1]);
 				flip(sM);
 				blue = abs(~blue);
 			end
-			if afterResult && now - svbl >= 3
+			if afterResult && now - svbl > 3
 				r.result = -1;
 				fprintf("INCORRECT: Subject kept holding screen %s trial for %.1fsecs...\n", when, now-svbl);
 				break;
 			end
+			now = WaitSecs(0.1);
+			fprintf("Subject holding screen %s trial end %.1fsecs...\n", when, now-svbl);
 		end
 		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 		flip(sM);
