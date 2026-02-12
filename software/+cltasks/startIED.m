@@ -35,6 +35,7 @@ function startIED(in)
 	try
 		%% ============================subfunction for shared initialisation
 		[sM, sv, r, sbg, rtarget, fix, a, rM, tM, dt, quitKey, saveName] = clutil.initialise(in, bgName, prefix);
+		if ~isempty(sbg); r.sbg = sbg; end
 
 		%% ============================task specific figures
 		switch lower(in.object)
@@ -223,6 +224,9 @@ function startIED(in)
 				r.delayTime = in.delayTime(1) + (in.delayTime(2)-in.delayTime(1))*rand;
 			end
 
+			%% ============================== Wait for release
+			r = clutil.ensureTouchRelease(true, r, tM, sM);
+
 			%% Initiate a trial with a touch target
 			[r, dt, r.vblInitT] = clutil.initTouchTrial(r, in, tM, sbg, sM, fix, quitKey, dt);
 
@@ -311,14 +315,7 @@ function startIED(in)
 			end
 
 			%% ============================== Wait for release
-			if ~isempty(sbg); draw(sbg); else; drawBackground(sM, in.bg); end
-			if in.debug; drawText(s,'Please release touchscreen...'); end
-			flip(sM);
-			while isTouch(tM)
-				WaitSecs(0.5);
-			end
-			if ~isempty(sbg); draw(sbg); else; drawBackground(sM, in.bg); end
-			flip(sM);
+			r = clutil.ensureTouchRelease(true, r, tM, sM);
 
 			%% ============================== update this trials reults
 			[dt, r] = clutil.updateTrialResult(in, dt, r, rtarget, sbg, sM, tM, rM, a);

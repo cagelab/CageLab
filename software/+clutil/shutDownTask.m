@@ -14,12 +14,13 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	if isfield('r',' sbg') && ~isempty(r.sbg); draw(r.sbg); end
 	drawTextNow(sM, 'FINISHED!');
 
-	%% change status for cogmoteGO
+	%% ================================== broadcast final data & change status for cogmoteGO
 	if in.remote
-		try currentStatus = r.status.updateStatusToStopped(); end
+		try r.status.updateStatusToStopped(); end
+		try clutil.broadcastTrial(in, r, dt, false); end
 	end
-
-	%% reset and close stims and devices
+	
+	%% ================================== reset and close stims and devices
 	try RestrictKeysForKbCheck([]); end
 	try ListenChar(0); Priority(0); ShowCursor; end %#ok<*TRYNC>
 	try touchManager.enableTouchDevice(tM.deviceName, "disable"); end
@@ -29,16 +30,19 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	if isfield('r', 'target') && ~isempty(r.target); try reset(r.target); end; end
 	if isfield('r', 'rtarget') && ~isempty(r.rtarget); try reset(r.rtarget); end; end
 	
+	%% ================================== reset communication interfaces
 	in.zmq = [];
 	r.zmq = [];
 	r.broadcast = [];
+	r.status = [];
 
-	try close(sM); end
+	%% ================================= close devices and managers
+	try close(sM); end %#ok<*TRYNC>
 	try close(tM); end
 	try close(rM); end
 	try close(aM); end
 
-	%% show some basic results
+	%% ================================== show some basic results
 	try
 		disp('');
 		disp('==================================================');
@@ -57,7 +61,7 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 		fprintf('  Free Volume: %i ml\n\n\n', fVol);
 	end
 	
-	%% save trial data
+	%% ================================== save trial data
 	disp('=========================================');
 	fprintf('===> Saving data to %s\n', r.saveName)
 	disp('=========================================');
@@ -71,8 +75,7 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	WaitSecs('YieldSecs',0.1);
 	writelines("Session ended: " + string(datetime('now')), "~/cagelab-start.txt", WriteMode="append");
 
-	%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	%  Send data to Alyx if enabled
+	%% ================================== send data to Alyx if enabled
 	err = "";
 	if in.useAlyx
 		if in.initAlyxAtStart
@@ -87,11 +90,7 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 		end
 	end
 
-
-	%% ================================== broadcast the end data to cogmoteGO
-	try clutil.broadcastTrial(in, r, dt, false); end
-
-	%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%% ================================== wrap up
 	% wrap up
 	diary off
 	r.comments(end+1) = "Shut down task.";
@@ -100,6 +99,6 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 		writelines(["Alyx Error: " + err, " "], "~/cagelab-start.txt", WriteMode="append");
 		error(err);
 	end
-
-	if IsLinux; try system('xset s 300 dpms 600 0 0'); end; end
+	if IsLinux; try system('xset s 300 dpms 900 0 0'); end; end
+		
 end

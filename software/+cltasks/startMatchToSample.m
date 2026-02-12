@@ -239,7 +239,7 @@ function startMatchToSample(in)
 			update(delayDistractors);
 
 			%% ============================== Wait for release
-			ensureTouchRelease(false);
+			r = clutil.ensureTouchRelease(false, r, tM, sM);
 
 			%% =============================== timers for sample and delay
 			%  sampleTime and delayTime can be single or range values
@@ -349,7 +349,7 @@ function startMatchToSample(in)
 			end
 
 			%% ============================== Wait for release
-			ensureTouchRelease(true);
+			r = clutil.ensureTouchRelease(true, r, tM, sM);
 
 			%% ============================== update this trials reults
 			% [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
@@ -382,29 +382,4 @@ function startMatchToSample(in)
 		rethrow(ME)
 	end
 
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	% make sure the subject is NOT touching the screen
-	function ensureTouchRelease(afterResult)
-		if ~exist('afterResult','var'); afterResult = false; end
-		if ~afterResult; when="BEFORE"; else; when="AFTER"; end
-		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
-		if in.debug; drawText(sM,'Please release touchscreen...'); end
-		svbl = flip(sM); now = svbl; blue = 0;
-		while isTouch(tM)
-			if (now - svbl >= 1)
-				drawBackground(sM,[1 blue 1]);
-				flip(sM);
-				blue = abs(~blue);
-			end
-			if afterResult && now - svbl > 3
-				r.result = -1;
-				fprintf("INCORRECT: Subject kept holding screen %s trial for %.1fsecs...\n", when, now-svbl);
-				break;
-			end
-			now = WaitSecs(0.1);
-			fprintf("Subject holding screen %s trial end %.1fsecs...\n", when, now-svbl);
-		end
-		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
-		flip(sM);
-	end
 end

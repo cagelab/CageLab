@@ -59,8 +59,8 @@ function startThings(in)
 
 		%% ============================ training parameters
 		r.totalPhases = 20;
-		dAlpha = linspace(0,1,r.totalPhases);
-		pAlpha = linspace(1,0,r.totalPhases);
+		dAlpha = linspace(0.1,1,r.totalPhases);
+		pAlpha = linspace(0.5,0,r.totalPhases);
 		for ii = 1:20
 			phases(ii).dAlpha = dAlpha(ii);
 			phases(ii).pAlpha = pAlpha(ii);
@@ -107,9 +107,6 @@ function startThings(in)
 			fail = false; hld = false; 
 
 			xpos = positions(randperm(3)); % randomise the x position
-			%samples{2}.xPositionOut = xpos(1);
-			%samples{3}.xPositionOut = xpos(2);
-			%samples{4}.xPositionOut = xpos(3);
 			switch in.taskType
 				case 'training 1'
 					if r.phase>10;in.doNegation = false;tM.window.doNegation = false;end
@@ -200,7 +197,7 @@ function startThings(in)
 			r.sampleNames = [string(samples{2}.currentFile) string(samples{3}.currentFile) string(samples{4}.currentFile)];
 
 			%% ============================== Wait for release
-			ensureTouchRelease(false);
+			r = clutil.ensureTouchRelease(false, r, tM, sM);
 
 			%% ============================== Initiate a trial with a touch target
 			% [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
@@ -275,7 +272,7 @@ function startThings(in)
 			end
 
 			%% ============================== Wait for release
-			ensureTouchRelease(true);
+			r = clutil.ensureTouchRelease(true, r, tM, sM);
 
 			%% ============================== update this trials reults
 			% [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
@@ -319,32 +316,6 @@ function startThings(in)
 		choice = find(ooo == B);
 		others = [1 2 3];
 		others = others(others~=choice);
-	end
-	
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	% make sure the subject is NOT touching the screen
-	function ensureTouchRelease(afterResult)
-		if ~exist('afterResult','var'); afterResult = false; end
-		if ~afterResult; when="BEFORE"; else; when="AFTER"; end
-		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
-		if in.debug; drawText(sM,'Please release touchscreen...'); end
-		svbl = flip(sM); now = svbl; blue = 0;
-		while isTouch(tM)
-			if (now - svbl >= 1)
-				drawBackground(sM,[1 blue 1]);
-				flip(sM);
-				blue = abs(~blue);
-			end
-			if afterResult && now - svbl > 3
-				r.result = -1;
-				fprintf("INCORRECT: Subject kept holding screen %s trial for %.1fsecs...\n", when, now-svbl);
-				break;
-			end
-			now = WaitSecs(0.1);
-			fprintf("Subject holding screen %s trial end %.1fsecs...\n", when, now-svbl);
-		end
-		if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
-		flip(sM);
 	end
 
 end
