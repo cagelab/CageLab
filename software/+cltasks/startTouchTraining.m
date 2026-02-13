@@ -133,7 +133,7 @@ function startTouchTraining(in)
 			end
 
 			%% ============================== Wait for release (false means before trial)
-			r = clutil.ensureTouchRelease(false, r, tM, sM);
+			r = clutil.ensureTouchRelease(r, tM, sM, false);
 			reset(tM, false); flush(tM);
 
 			%% ============================== initialise trial times etc.
@@ -195,7 +195,7 @@ function startTouchTraining(in)
 			end
 
 			%% ============================== Ensure release of touch screen (true means after trial)
-			if ~fail; r = clutil.ensureTouchRelease(true, r, tM, sM); end
+			if ~fail; r = clutil.ensureTouchRelease(r, tM, sM, true); end
 
 			%% ============================== update this trials reults
 			% [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)

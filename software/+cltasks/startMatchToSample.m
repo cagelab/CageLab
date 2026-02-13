@@ -239,7 +239,7 @@ function startMatchToSample(in)
 			update(delayDistractors);
 
 			%% ============================== Wait for release
-			r = clutil.ensureTouchRelease(false, r, tM, sM);
+			r = clutil.ensureTouchRelease(r, tM, sM, false);
 
 			%% =============================== timers for sample and delay
 			%  sampleTime and delayTime can be single or range values
@@ -349,7 +349,7 @@ function startMatchToSample(in)
 			end
 
 			%% ============================== Wait for release
-			r = clutil.ensureTouchRelease(true, r, tM, sM);
+			r = clutil.ensureTouchRelease(r, tM, sM, true);
 
 			%% ============================== update this trials reults
 			% [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)

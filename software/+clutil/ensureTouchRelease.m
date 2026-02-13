@@ -1,12 +1,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % make sure the subject is NOT touching the screen
-function r = ensureTouchRelease(afterResult, r, tM, sM)
-	% r = ensureTouchRelease(afterResult, r, tM, sM)
-	arguments
-		afterResult logical = false
+function r = ensureTouchRelease(r, tM, sM, afterResult)
+	% r = ensureTouchRelease(r, tM, sM, afterResult)
+	arguments(Input)
 		r struct
 		tM touchManager
 		sM screenManager
+		afterResult logical = false
+	end
+	arguments(Output)
+		r struct
 	end
 	if ~afterResult; when="BEFORE"; else; when="AFTER"; end
 	if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, [0 0 0]); end

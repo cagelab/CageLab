@@ -197,7 +197,7 @@ function startThings(in)
 			r.sampleNames = [string(samples{2}.currentFile) string(samples{3}.currentFile) string(samples{4}.currentFile)];
 
 			%% ============================== Wait for release
-			r = clutil.ensureTouchRelease(false, r, tM, sM);
+			r = clutil.ensureTouchRelease(r, tM, sM, false);
 
 			%% ============================== Initiate a trial with a touch target
 			% [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
@@ -272,7 +272,7 @@ function startThings(in)
 			end
 
 			%% ============================== Wait for release
-			r = clutil.ensureTouchRelease(true, r, tM, sM);
+			r = clutil.ensureTouchRelease(r, tM, sM, true);
 
 			%% ============================== update this trials reults
 			% [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)

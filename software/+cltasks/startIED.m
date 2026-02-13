@@ -225,7 +225,7 @@ function startIED(in)
 			end
 
 			%% ============================== Wait for release
-			r = clutil.ensureTouchRelease(true, r, tM, sM);
+			r = clutil.ensureTouchRelease(r, tM, sM, true);
 
 			%% Initiate a trial with a touch target
 			[r, dt, r.vblInitT] = clutil.initTouchTrial(r, in, tM, sbg, sM, fix, quitKey, dt);
@@ -315,7 +315,7 @@ function startIED(in)
 			end
 
 			%% ============================== Wait for release
-			r = clutil.ensureTouchRelease(true, r, tM, sM);
+			r = clutil.ensureTouchRelease(r, tM, sM, true);
 
 			%% ============================== update this trials reults
 			[dt, r] = clutil.updateTrialResult(in, dt, r, rtarget, sbg, sM, tM, rM, a);
