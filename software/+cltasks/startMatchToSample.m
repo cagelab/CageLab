@@ -204,6 +204,8 @@ function startMatchToSample(in)
 						targets.fixationChoice = 3;
 					end
 			end
+			r.summary = sprintf("Fixation Choice: %i ", targets.fixationChoice);
+			r.store.fixationChoice = targets.fixationChoice;
 			try r.sampleNames = [string(sample.filePath) string(target.filePath) string(distractor1.filePath) string(distractor2.filePath) string(distractor3.filePath) string(distractor4.filePath)]; end
 
 			if contains(in.taskType, 'training')
@@ -214,6 +216,7 @@ function startMatchToSample(in)
 					targets.stimulusSets{3} = 3;
 				end
 			end
+			r.store.stimulusSets = targets.stimulusSets;
 
 			hide(targets);
 			if matches(in.task,"mts")
@@ -248,11 +251,15 @@ function startMatchToSample(in)
 			else
 				r.sampleTime = in.sampleTime(1) + (in.sampleTime(2)-in.sampleTime(1))*rand;
 			end
+			r.summary = [r.summary, sprintf("Sample time: %.3f", r.sampleTime)];
+			r.store.sampleTime = r.sampleTime;
 			if isscalar(in.delayTime)
 				r.delayTime = in.delayTime;
 			else
 				r.delayTime = in.delayTime(1) + (in.delayTime(2)-in.delayTime(1))*rand;
 			end
+			r.summary = [r.summary, sprintf("Delay time: %.3f", r.delayTime)];
+			r.store.delayTime = r.delayTime;
 
 			%% ============================== Initiate a trial with a touch target
 			% [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
@@ -268,7 +275,8 @@ function startMatchToSample(in)
 
 				if matches(in.task,["dmts","dnts"])
 					vbl = GetSecs; vblInit = vbl + r.sv.ifi;
-					% sample time
+					r.store.sampleStart = vblInit;
+					%% ================================================ sample time
 					while vbl <= vblInit + r.sampleTime
 						if ~isempty(r.sbg); draw(r.sbg); end
 						draw(targets);
@@ -280,8 +288,9 @@ function startMatchToSample(in)
 						end
 						[~,~,c] = KbCheck(); if c(r.quitKey); r.keepRunning = false; break; end
 					end
-					% delay time
+					%% ================================================ delay time
 					vblInit = vbl + r.sv.ifi;
+					r.store.delayStart = vblInit;
 					while vbl <= vblInit + r.delayTime
 						if ~isempty(r.sbg); draw(r.sbg); end
 						if in.delayDistractors; draw(delayDistractors); end
@@ -291,7 +300,7 @@ function startMatchToSample(in)
 							break
 						end
 					end
-					% show distractors
+					%% ================================================ show distractors
 					showSet(targets, 4); %just target and distractors
 				end
 
@@ -307,6 +316,7 @@ function startMatchToSample(in)
 				vbl = GetSecs;
 				r.stimOnsetTime = vbl;
 				r.vblInit = vbl + r.sv.ifi; %start is actually next flip
+				r.store.stimOnsetTime = r.vblInit;
 				syncTime(tM, r.vblInit);
 
 				while isempty(r.touchResponse) && vbl <= (r.vblInit + in.trialTime)
@@ -335,6 +345,7 @@ function startMatchToSample(in)
 			end
 			
 			r.vblFinal = GetSecs;
+			r.store.vblFinal = r.vblFinal;
 			r.value = hld;
 
 			%% ============================== check logic of task result

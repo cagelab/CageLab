@@ -24,7 +24,8 @@ function r = initTrialVariables(r)
 	r.sampleTime = NaN;
 	r.delayTime = NaN;
 	% text
-	r.summary = '';
+	r.summary = [];
+	r.store = struct();
 	r.txt = '';
 	r.sampleNames = [];
 	r.easyTrial = NaN;
