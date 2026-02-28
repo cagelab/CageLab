@@ -2,7 +2,7 @@ function in = checkInput()
 	pth = fileparts(fileparts(mfilename('fullpath')));
 	in.density = 70;
 	in.distance = 30;
-	in.timeOut = 4;
+	in.timeOut = 1;
 
 	in.fg = [1 1 0.75];
 	in.bg = [0.5 0.5 0.5];
@@ -69,5 +69,18 @@ function in = checkInput()
 	in.distractorY = -1;
 	
 	in.zmq = [];
+	in.useAlyx = false;
+	in.useBlending = true;
+	in.disableSync = false;
+	in.useVulkan = false;
+	in.reward = false;
+	in.command = '';
+	in.remote = false;
+	in.trackID = false;
+	in.session = struct('researcherName', 'test', 'labName', 'test', 'projectName', 'test', 'subjectName', 'test');
+	in.lab = 'test';
+	in.initHoldTime = 0.5;
+	in.sessionURL = '';
+	in.totalRewards = 100;
 	
 end
