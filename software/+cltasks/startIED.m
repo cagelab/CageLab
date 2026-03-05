@@ -5,15 +5,15 @@ function startIED(in)
 	% Example:
 	%   in = struct();
 	%   in.taskType = 'sd'; % 'sd','sr','cd','cr','ids','idr','eds','edr'
-	% in.taskType stage meanings (CANTAB IED sequence):
-	%   sd  - Simple Discrimination: only shape varies; learn initial rule (shape dimension relevant).
-	%   sr  - Simple Reversal: same stimuli as SD; reward contingency reverses to test reversal learning.
-	%   cd  - Compound Discrimination: shape + color shown; shape remains relevant while color is an irrelevant distractor.
-	%   cr  - Compound Reversal: same compound setup as CD; reward contingency reverses on the same relevant dimension.
-	%   ids - Intra-Dimensional Shift: new exemplars on both dimensions; relevant dimension stays the same (shape).
-	%   idr - Intra-Dimensional Reversal: same exemplars as IDS; contingency reverses within the same relevant dimension.
-	%   eds - Extra-Dimensional Shift: new exemplars again; relevant dimension switches (shape -> color), testing set shifting.
-	%   edr - Extra-Dimensional Reversal: same exemplars as EDS; contingency reverses after the extra-dimensional shift.
+	%   in.taskType stage meanings (CANTAB IED sequence):
+	%     sd  - Simple Discrimination: only shape varies; learn initial rule (shape dimension relevant).
+	%     cd  - Compound Discrimination: shape + color shown; shape remains relevant while color is an irrelevant distractor.
+	%     sr  - Simple Reversal: same stimuli as SD; reward contingency reverses to test reversal learning.
+	%     cr  - Compound Reversal: same compound setup as CD; reward contingency reverses on the same relevant dimension.
+	%     ids - Intra-Dimensional Shift: new exemplars on both dimensions; relevant dimension stays the same (shape).
+	%     idr - Intra-Dimensional Reversal: same exemplars as IDS; contingency reverses within the same relevant dimension.
+	%     eds - Extra-Dimensional Shift: new exemplars again; relevant dimension switches (shape -> color), testing set shifting.
+	%     edr - Extra-Dimensional Reversal: same exemplars as EDS; contingency reverses after the extra-dimensional shift.
 	%   in.objectSize = 10; % size of objects in degrees
 	%   in.objectSep = 15; % separation of objects in degrees
 	%   in.sampleY = 0; % vertical position of sample object in degrees
@@ -25,25 +25,12 @@ function startIED(in)
 	%
 	% 
 
-	if ~exist('in','var') || isempty(in); in = struct(); end
-	% Merge with checkInput defaults
-	defIn = clutil.checkInput();
-	fNames = fieldnames(defIn);
-	for i = 1:numel(fNames)
-		if ~isfield(in, fNames{i})
-			in.(fNames{i}) = defIn.(fNames{i});
-		end
-	end
-
-	if ~isfield(in, 'taskType') || isempty(in.taskType); in.taskType = 'sd'; end
-	if ~isfield(in, 'sampleY'); in.sampleY = 0; end
-	if ~isfield(in, 'objectSize'); in.objectSize = 10; end
-	if ~isfield(in, 'objectSep'); in.objectSep = 15; end
-	if ~isfield(in, 'targetHoldTime'); in.targetHoldTime = 0.2; end
-	if ~isfield(in, 'useAlyx'); in.useAlyx = false; end
-	bgName = 'creammarbleD.jpg';
+	if ~exist('in','var'); in = struct('taskType','cd'); end
+	tt = split(in.taskType); in.taskType = tt{1};
+	in = clutil.checkInput(in);
+	bgName = 'redmarbleA.jpg';
 	prefix = 'IED';
-	in.distractorY = in.sampleY;
+	
 
 	try
 		%% ============================subfunction for shared initialisation
@@ -54,7 +41,7 @@ function startIED(in)
 		% 6 Shapes, 6 Colors to comfortably support IDS and EDS shifts
 		allShapes = ["circle.png", "rect3.png", "triangle2.png", "heptagon.png", "star.png", "random.png"];
 		allColors = {[1 0 0], [0 1 0], [0 0 1], [1 1 0], [1 0 1], [0 1 1]};
-		neutralColor = [0.5 0.5 0.5]; % Used for SD and SR stages
+		neutralColor = [0.8 0.8 0.8]; % Used for SD and SR stages
 
 		% Shuffle to randomize dimension pairings for this specific session
 		sessionShapes = allShapes(randperm(length(allShapes)));

@@ -1,86 +1,103 @@
-function in = checkInput()
+function in = checkInput(in)
+	if ~exist('in', 'var') || isempty(in)
+		in = struct();
+	elseif ~isstruct(in)
+		error('checkInput:InvalidInput', 'Input must be a struct.');
+	end
+
 	pth = fileparts(fileparts(mfilename('fullpath')));
-	in.density = 70;
-	in.distance = 30;
-	in.timeOut = 1;
 
-	in.fg = [1 1 0.75];
-	in.bg = [0.5 0.5 0.5];
+	defaults = struct();
+	defaults.density = 70;
+	defaults.distance = 30;
+	defaults.timeOut = 1;
 
-	in.IP = '127.0.0.1';
-	in.port = 9012;
+	defaults.fg = [1 1 0.75];
+	defaults.bg = [0.5 0.5 0.5];
 
-	in.folder = [pth filesep 'resources'];
-	in.debug = true;
-	in.dummy = true;
-	
-	in.audio = true;
-	in.audioDevice = [];
-	in.audioVolume = 0.2;
+	defaults.IP = '127.0.0.1';
+	defaults.port = 9012;
 
-	in.phase = 1;
-	in.stimulusType = 'Picture';
-	in.task = 'generic';
-	in.taskType = 'normal';
+	defaults.remote = false;
+	defaults.folder = [pth filesep 'resources'];
+	defaults.debug = true;
+	defaults.dummy = true;
+	defaults.reward = false;
 
-	in.name = 'simulcra';
-	in.rewardmode = 1;
-	in.volume = 250;
-	in.random = 1;
-	in.screen = 0;
-	in.smartBackground = true;
-	
-	in.correctBeep = 3000;
-	in.incorrectBeep = 400;
+	defaults.audio = true;
+	defaults.audioDevice = [];
+	defaults.audioVolume = 0.2;
 
-	in.trialTime = 5;
-   
-	in.rewardPort = '/dev/ttyACM0';
-	in.rewardTime = 200;
+	defaults.phase = 1;
+	defaults.stimulusType = 'Picture';
+	defaults.task = 'generic';
+	defaults.taskType = 'normal';
 
-	in.randomReward = 30;
-	in.randomProbability = 0.25;
-	in.randomReward = 0;
-	in.volume = 250;
+	defaults.name = 'simulcra';
+	defaults.rewardmode = 1;
+	defaults.volume = 250;
+	defaults.random = 1;
+	defaults.screen = 0;
+	defaults.smartBackground = true;
 
-	in.nTrialsSample = 10;
-	in.stepForward = 10;
-	in.stepPercent = 80;
-	in.stepBack = 10;
+	defaults.correctBeep = 3000;
+	defaults.incorrectBeep = 400;
 
-	in.doNegation = true;
-	in.negationBuffer = 2;
-	in.exclusionZone = [];
-	in.drainEvents = true;
-	in.strictMode = true;
-	in.negateTouch = true;
-	in.touchDevice = 1;
-	in.touchDeviceName = 'ILITEK-TP';
-	
-	in.stimulus = 1;
-	in.maxSize = 50;
-	in.minSize = 4;
-	in.initPosition = [0 4];
-	in.initSize = 4;
-	in.target1Pos = [-5 -5];
-	in.target2Pos = [5 -5];
-	in.targetSize = 10;
-	in.startY = -10;
-	in.distractorY = -1;
-	
-	in.zmq = [];
-	in.useAlyx = false;
-	in.useBlending = true;
-	in.disableSync = false;
-	in.useVulkan = false;
-	in.reward = false;
-	in.command = '';
-	in.remote = false;
-	in.trackID = false;
-	in.session = struct('researcherName', 'test', 'labName', 'test', 'projectName', 'test', 'subjectName', 'test');
-	in.lab = 'test';
-	in.initHoldTime = 0.5;
-	in.sessionURL = '';
-	in.totalRewards = 100;
-	
+	defaults.rewardPort = '/dev/ttyACM0';
+	defaults.rewardTime = 200;
+
+	defaults.randomReward = 0;
+	defaults.randomProbability = 0.25;
+
+	defaults.nTrialsSample = 10;
+	defaults.stepForward = 10;
+	defaults.stepPercent = 80;
+	defaults.stepBack = 10;
+
+	defaults.doNegation = true;
+	defaults.negationBuffer = 2;
+	defaults.exclusionZone = [];
+	defaults.drainEvents = true;
+	defaults.strictMode = true;
+	defaults.negateTouch = true;
+	defaults.touchDevice = 1;
+	defaults.touchDeviceName = 'ILITEK-TP';
+
+	defaults.stimulus = 1;
+	defaults.objectSize = 8;
+	defaults.objectSep = 12;
+	defaults.maxSize = 50;
+	defaults.minSize = 4;
+	defaults.initPosition = [0 4];
+	defaults.initSize = 4;
+	defaults.target1Pos = [-5 -5];
+	defaults.target2Pos = [5 -5];
+	defaults.targetSize = 10;
+	defaults.startY = -10;
+	defaults.sampleY = -1;
+	defaults.distractorY = -1;
+	defaults.trialTime = 5;
+	defaults.initHoldTime = 0.005;
+	defaults.targetHoldTime = 0.005;
+
+	defaults.zmq = [];
+	defaults.useAlyx = false;
+	defaults.useBlending = true;
+	defaults.disableSync = true;
+	defaults.useVulkan = false;
+	defaults.command = '';
+	defaults.trackID = false;
+	defaults.session = struct('researcherName', 'admin', 'labName', 'CogPlatform', 'projectName', 'TestTraining', 'subjectName', 'TestSubject');
+	defaults.lab = 'CogPlatform';
+	defaults.sessionURL = '';
+	defaults.totalRewards = 100;
+
+	fields = fieldnames(defaults);
+	for i = 1:numel(fields)
+		f = fields{i};
+		if ~isfield(in, f) || isempty(in.(f))
+			in.(f) = defaults.(f);
+		end
+	end
+
 end

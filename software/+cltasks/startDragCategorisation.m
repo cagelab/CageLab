@@ -1,5 +1,6 @@
 function startDragCategorisation(in)
-	if ~exist('in','var') || isempty(in); in = clutil.checkInput(pth); end
+	if ~exist('in','var'); in = struct(); end
+	in = clutil.checkInput(in);
 	bgName = 'abstract4.jpg';
 	prefix = 'DCAT';
 	

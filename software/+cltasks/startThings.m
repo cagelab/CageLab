@@ -19,7 +19,8 @@ function startThings(in)
 	%   in.fixSize = 2; % fixation size in degrees
 	%   in.fixWindow = 4; % fixation window size in degrees
 
-	if ~exist('in','var') || isempty(in); in = clutil.checkInput(); end
+	if ~exist('in','var'); in = struct(); end
+	in = clutil.checkInput(in);
 	bgName = 'creammarbleD.jpg';
 	prefix = 'OOO';
 	in.sampleY = in.distractorY;
@@ -106,7 +107,6 @@ function startThings(in)
 			txt = '';
 			fail = false; hld = false; 
 
-			xpos = positions(randperm(3)); % randomise the x position
 			switch in.taskType
 				case 'training 1'
 					if r.phase>10;in.doNegation = false;tM.window.doNegation = false;end

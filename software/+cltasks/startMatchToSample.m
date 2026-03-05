@@ -20,7 +20,8 @@ function startMatchToSample(in)
 	%   in.fixSize = 2; % fixation size in degrees
 	%   in.fixWindow = 4; % fixation window size in degrees
 
-	if ~exist('in','var') || isempty(in); in = clutil.checkInput(); end
+	if ~exist('in','var'); in = struct('task','dmts'); end
+	in = clutil.checkInput(in);
 	if matches(in.task,'mts')
 		bgName = 'abstract2.jpg';
 		prefix = 'MTS';
@@ -35,9 +36,7 @@ function startMatchToSample(in)
 	try
 		%% ============================subfunction for shared initialisation
 		%[sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
-		tic
 		[sM, aM, rM, tM, r, dt, in] = clutil.initialise(in, bgName, prefix);
-		toc
 
 		%% ============================task specific figures
 		switch lower(in.object)
@@ -333,11 +332,13 @@ function startMatchToSample(in)
 						r.reactionTime = vbl - r.vblInit;
 						r.anyTouch = true;
 					end
-					if in.debug; txt = sprintf('Response=%i x=%.2f y=%.2f h:%i ht:%i r:%i rs:%i s:%i fail:%i tch:%i WR: %.1f WInit: %.2f WHold: %.2f WRel: %.2f WX: %.2f WY: %.2f',...
-						r.touchResponse, tM.x, tM.y, hld, r.hldtime, rel, reli, ...
-						se, fail, tch, tM.window.radius,tM.window.init, ...
-						tM.window.hold,tM.window.release,tM.window.X, ...
-						tM.window.Y); end
+					if in.debug
+						txt = sprintf('Response=%i x=%.2f y=%.2f h:%i ht:%i r:%i rs:%i s:%i fail:%i tch:%i WR: %.1f WInit: %.2f WHold: %.2f WRel: %.2f WX: %.2f WY: %.2f',...
+							r.touchResponse, tM.x, tM.y, hld, r.hldtime, rel, reli, ...
+							se, fail, tch, tM.window.radius,tM.window.init, ...
+							tM.window.hold,tM.window.release,tM.window.X, ...
+							tM.window.Y);
+					end
 					[~,~,c] = KbCheck();
 					if c(r.quitKey); r.keepRunning = false; break; end
 					if c(r.shotKey); sM.captureScreen; end

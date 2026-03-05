@@ -10,7 +10,8 @@ function startTouchTraining(in)
 	%   in.maxSize = maximum stimulus size in degrees (default = 10)
 	%   in.trialTime = maximum trial time in seconds (default = 5)
 
-	if ~exist('in','var') || isempty(in); in = clutil.checkInput(); end
+	if ~exist('in','var'); in = struct(); end
+	in = clutil.checkInput(in);
 	bgName = 'abstract1.jpg';
 	prefix = 'TT';
 	in.taskType = 'training';
@@ -28,7 +29,6 @@ function startTouchTraining(in)
 		else
 			target = discStimulus('size', in.maxSize, 'colour', in.fg);
 		end
-		set = metaStimulus;
 		if in.debug; target.verbose = true; end
 
 		%% ============================ custom stimuli setup

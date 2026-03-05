@@ -20,6 +20,8 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 		in struct
 	end
 
+	tt = tic;
+
 	%% ============================ check alyx / aws secrets are available
 	if in.useAlyx && ~isSecret('AWS_ID') && ~isSecret('AWS_KEY') && ~isSecret('AlyxPassword')
 		error('When using Alyx, Secrets must be created before running task!!!');
@@ -279,4 +281,6 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	%% broadcast the initial status to cogmoteGO
 	% Push an initial status packet so remote monitors have the starting state.
 	clutil.broadcastTrial(in, r, dt, true);
+
+	fprintf('===>>> CageLab Task Initialisation Time: %f seconds\n', toc(tt));
 end
