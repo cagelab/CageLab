@@ -1,6 +1,6 @@
 function ver = version()
 % version - returns the version of the CageLab software
 
-ver = '1.0.49';
+ver = '1.0.50';
 
 end
