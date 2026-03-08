@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-ul=(~/Code/Psychtoolbox ~/Code/opticka ~/Code/CageLab ~/Code/Setup ~/Code/matmoteGO ~/Code/PTBSimia ~/Code/matlab-jzmq ~/.dotfiles)
+ul=(~/Code/Psychtoolbox ~/Code/opticka ~/Code/CageLab ~/Code/Setup ~/Code/matmoteGO ~/Code/PTBSimia ~/Code/matlab-jzmq ~/Code/PacmanTask ~/.dotfiles)
 
 for dir in $ul; do
 	if [[ -d $dir && -d $dir/.git ]]; then
