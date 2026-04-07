@@ -147,6 +147,11 @@ function startThings(in)
 					showSet(samples, 1); % show all stimuli with pedestal
 					update(samples);
 				case 'training 3'
+					if in.simplifiedImages
+						thisPath = string(in.folder) + filesep + "simplified" + filesep;
+					else
+						thisPath = string(in.folder) + filesep;
+					end
 					pfix = pfix(randperm(2));
 					[choice, ooo, others] = randomTriplet();
 					cidx = choice + 1; oidx = others + 1;
@@ -161,9 +166,9 @@ function startThings(in)
 					samples{2}.alphaOut = alpha(1);
 					samples{3}.alphaOut = alpha(2);
 					samples{4}.alphaOut = alpha(3);
-					samples{cidx}.filePath = string(in.folder) + filesep + pfix(1);
+					samples{cidx}.filePath = thisPath + pfix(1);
 					update(samples{cidx});
-					samples{oidx(1)}.filePath = string(in.folder) + filesep + pfix(2);
+					samples{oidx(1)}.filePath = thisPath + pfix(2);
 					update(samples{oidx(1)});
 					if contains(in.trainingSet,"set a")
 						samples{oidx(2)}.filePath = samples{oidx(1)}.currentFile;
@@ -172,7 +177,7 @@ function startThings(in)
 					elseif contains(in.trainingSet,"set b") && in.easyMode
 						randN = rand;
 						if (r.correctRateRecent > 0.75) || randN > (1 - r.correctRateRecent)
-							samples{oidx(2)}.filePath = string(in.folder) + filesep + pfix(2);
+							samples{oidx(2)}.filePath = thisPath + pfix(2);
 							update(samples{oidx(2)});
 							r.easyTrial = false;
 						else
@@ -181,7 +186,7 @@ function startThings(in)
 							r.easyTrial = true;
 						end
 					else
-						samples{oidx(2)}.filePath = string(in.folder) + filesep + pfix(2);
+						samples{oidx(2)}.filePath = thisPath + pfix(2);
 						update(samples{oidx(2)});
 						r.easyTrial = false;
 					end

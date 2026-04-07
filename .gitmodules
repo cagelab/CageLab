@@ -1,3 +1,4 @@
 [submodule "software/resources"]
 	path = software/resources
 	url = https://gitee.com/CogPlatform/TaskResources.git
+	branch = main
