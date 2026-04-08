@@ -77,6 +77,7 @@ function startThings(in)
 			case 'training 1'
 				images = ["heptagon.png", "triangle2.png", "circle.png"];
 				colours = {[1 0 0],[0 1 0],[0 0 1]};
+				pfix = [];
 				samples.edit(2:4,'randomiseSelection',false);
 				in.doNegation = false;
 				tM.window.doNegation = false;
@@ -92,6 +93,7 @@ function startThings(in)
 				colours = [];
 				samples.edit(2:4,'randomiseSelection',true);
 			otherwise
+				pfix = [];
 				images = [];
 				colours = [];
 				samples.edit(2:4,'randomiseSelection',false);
@@ -160,8 +162,7 @@ function startThings(in)
 					samples.fixationChoice = cidx;
 					xChoice = samples{cidx}.xPositionOut / sM.ppd;
 					samples{1}.xPositionOut = xChoice;
-					fprintf('\n\n===Choice: %i (cidx: %i) XPos: %.2f, OOO: %s Others: %s\n', choice, cidx, xChoice, mat2str(ooo), mat2str(others));
-					update(samples{1});
+					update(samples{1}); %pedestal
 					samples{1}.alphaOut = phases(r.phase).pAlpha;
 					samples{2}.alphaOut = alpha(1);
 					samples{3}.alphaOut = alpha(2);
@@ -200,6 +201,7 @@ function startThings(in)
 					update(samples);
 			end
 			r.sampleNames = [string(samples{2}.currentFile) string(samples{3}.currentFile) string(samples{4}.currentFile)];
+			fprintf('\n\n===Choice: %i (cidx: %i) XPos: %.2f, OOO: %s Others: %s pfix: %s\n%s\n', choice, cidx, xChoice, mat2str(ooo), mat2str(others), mat2str(pfix), mat2str(r.sampleNames));
 
 			%% ============================== Wait for release
 			r = clutil.ensureTouchRelease(r, tM, sM, false);
