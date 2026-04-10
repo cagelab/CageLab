@@ -23,8 +23,11 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	tt = tic;
 
 	%% ============================ check alyx / aws secrets are available
-	if in.useAlyx && ~isSecret('AWS_ID') && ~isSecret('AWS_KEY') && ~isSecret('AlyxPassword')
-		error('When using Alyx, Secrets must be created before running task!!!');
+	if in.useAlyx && ~hasSecrets(in.alyx)
+		try setSecrets(in.alyx); end
+		if ~hasSecrets(in.alyx)
+			error('When using Alyx, Secrets must be created on control PC and sent before running task!!!');
+		end
 	end
 
 	%% ============================ run variables
@@ -160,10 +163,11 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 		alyx = in.alyx;
 	else
 		alyx = alyxManager();
+		try setSecrets(alyx); end
+		if ~hasSecrets(in.alyx);error('When using Alyx, Secrets must be created on control PC and sent before running task!!!');end
 	end
 	try in = rmfield(in,'alyx'); end %#ok<*TRYNC>
 	checkPaths(alyx);
-	setSecrets(alyx); % get password and aws keys from local secrets store
 	alyx.user = in.session.researcherName;
 	alyx.lab = in.session.labName;
 	alyx.subject = in.session.subjectName;
