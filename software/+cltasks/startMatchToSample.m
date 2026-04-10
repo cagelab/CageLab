@@ -247,18 +247,26 @@ function startMatchToSample(in)
 			%  sampleTime and delayTime can be single or range values
 			if isscalar(in.sampleTime)
 				r.sampleTime = in.sampleTime;
-			else
+			elseif numel(in.sampleTime) == 2
 				r.sampleTime = in.sampleTime(1) + (in.sampleTime(2)-in.sampleTime(1))*rand;
+			else
+				r.sampleTime = in.sampleTime(randi(length(in.sampleTime)));
 			end
 			r.summary = [r.summary, sprintf("Sample time: %.3f", r.sampleTime)];
 			r.store.sampleTime = r.sampleTime;
+
 			if isscalar(in.delayTime)
 				r.delayTime = in.delayTime;
-			else
+			elseif numel(in.delayTime) == 2
 				r.delayTime = in.delayTime(1) + (in.delayTime(2)-in.delayTime(1))*rand;
+			else
+				r.delayTime = in.delayTime(randi(length(in.delayTime)));
 			end
 			r.summary = [r.summary, sprintf("Delay time: %.3f", r.delayTime)];
 			r.store.delayTime = r.delayTime;
+
+			%% ============================== Log the trial info
+			fprintf('\n\n===>>> %s\n', mat2str(r.summary));
 
 			%% ============================== Initiate a trial with a touch target
 			% [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
