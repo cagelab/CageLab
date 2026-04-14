@@ -23,14 +23,16 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	tt = tic;
 
 	%% ============================ check alyx / aws secrets are available
-	if in.useAlyx && ~hasSecrets(in.alyx)
-		try setSecrets(in.alyx); end
+	if in.useAlyx && isa(in.alyx,'alyxManager') && ~hasSecrets(in.alyx)
+		try 
+			setSecrets(in.alyx); % you should set secrets locally and this will retrieve them
+		end
 		if ~hasSecrets(in.alyx)
 			error('When using Alyx, Secrets must be created on control PC and sent before running task!!!');
 		end
 	end
 
-	%% ============================ run variables
+	%% ============================ runtime variables
 	% struct r aggregates runtime status used by task loops, Alyx syncing, and remote control hooks.
 	r = [];
 	r.version = clutil.version;
@@ -41,7 +43,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	if isempty(hname); hname = 'unknown'; end
 	r.hostname = hname;
 	
-	%% =========================== debug mode?
+	%% =========================== debug mode
 	% When no full PTB screen is available, fall back to a windowed context so development
 	% can proceed without physical rig hardware.
 	windowed = [];
@@ -53,16 +55,15 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 			PsychDebugWindowConfiguration;
 		end
 	end
+	PsychDefaultSetup(2); % initial config for PTB
 	
-	% initial config for PTB
-	PsychDefaultSetup(2);
-	
-	% Prevent the OS from blanking the display or entering power-save 
-	% while experiments run.
+	%% =========================== turn off sleep
+	% Disable the OS blanking display or entering power-save 
 	if IsLinux
 		try system('xdotool key shift'); end
-		try system('xset s off'); end
 		try system('xset dpms force on'); end
+		try system('xset -dpms'); end
+		try system('xset s off'); end
 	end
 	
 	%% ============================ screen & background
@@ -190,16 +191,6 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	lines(3) = in.diaryName;
 	writelines(lines, "~/cagelab-start.txt", WriteMode="append");
 
-	%% ================================ initialise alyx session
-	% If Alyx integration is enabled and configured to start at session
-	in.session.initialised = false;
-	if in.useAlyx && in.initAlyxAtStart
-		[in.session, success] = clutil.initAlyxSession(r, in.session);
-		if ~success
-			error('Failed to initialise Alyx session at start of task!!!');
-		end
-	end
-
 	%% ================================ touch data
 	% Seed the touch-data log with session metadata so downstream tasks can append trial info.
 	dt = touchData();
@@ -272,6 +263,17 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	r.startTime = NaN;
 	r.endTime = NaN;
 	r.sampleNames = [];
+
+	%% ================================ initialise alyx session
+	% If Alyx integration is enabled and configured to start at session
+	in.session.initialised = false;
+	if in.useAlyx && in.initAlyxAtStart
+		[in.session, success] = clutil.initAlyxSession(r, in.session);
+		if ~success
+			error('Failed to initialise Alyx session at start of task!!!');
+		end
+	end
+
 	
 	%% task status set to true for cogmoteGO
 	% Update CogmoteGO dashboards so operators know the task is live before the first trial.
