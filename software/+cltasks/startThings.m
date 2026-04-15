@@ -33,21 +33,34 @@ function startThings(in)
 		%% ============================task specific figures
 		object = clutil.getThingsImages(in);
 
+		%% ============================calculates positions
+		if in.distractorSpreadAngle == 0
+			xpos = [- in.objectSep 0 in.objectSep];
+			ypos = r.fix.yPosition - 9; % all objects on same horizontal plane below fixation
+		else
+			% remember PTB: 0deg is +x (RIGHT) and 90deg is +y (DOWN)
+			angs = [in.distractorCenterAngle - in.distractorSpreadAngle, in.distractorCenterAngle, in.distractorCenterAngle + in.distractorSpreadAngle];
+			mod = in.objectSize * 0.414; % modifier for the length of hypotenuse greater than side
+			[xpos, ypos] = sM.polarToCartesianPoints(r.fix.xPosition, r.fix.yPosition, angs, [in.objectSep in.objectSep-mod]); % keep square edges as separated as the linear layout
+			xpos = [xpos(1,1) xpos(2,2), xpos(3,1)]; % we need to select the normal val for diagonal and mod for cardinal
+			ypos = [ypos(1,1) ypos(2,2), ypos(3,1)];
+		end
+
 		% for training use only
 		pedestal = discStimulus('size', in.objectSize + 3.5,'colour',[1 1 0.5],...
-			'alpha',in.pedestalOpacity,'yPosition',in.sampleY);
+			'alpha',in.pedestalOpacity, 'xPosition', xpos(2), 'yPosition',ypos(2));
 
 		% our three samples
 		sampleA = imageStimulus('size', in.objectSize, 'randomiseSelection', false,...
-			'yPosition',in.sampleY);
+			'xPosition', xpos(1), 'yPosition', ypos(1));
 		sampleB = clone(sampleA);
 		sampleC = clone(sampleA);
-		positions = [-in.objectSep 0 in.objectSep];
+		
 		samples = metaStimulus('stimuli',{pedestal, sampleA, sampleB, sampleC});
-		samples.edit(1:4,'yPosition', in.sampleY);
-		samples{2}.xPosition = positions(1);
-		samples{3}.xPosition = positions(2);
-		samples{4}.xPosition = positions(3);
+		
+		samples{2}.xPosition = xpos(1); samples{2}.yPosition = ypos(1);
+		samples{3}.xPosition = xpos(2); samples{3}.yPosition = ypos(2);
+		samples{4}.xPosition = xpos(3); samples{4}.yPosition = ypos(3);
 		samples.fixationChoice = 2:4;
 		samples.stimulusSets{1} = 1:4; % all stimuli
 		samples.stimulusSets{2} = 1:2; % single stimulus set with pedestal + sampleA
@@ -107,18 +120,21 @@ function startThings(in)
 			%% ============================== initialise trial variables
 			r = clutil.initTrialVariables(r);
 			txt = '';
-			fail = false; hld = false; 
+			fail = false; hld = false;
+			xyChoice = [];
 
 			switch in.taskType
 				case 'training 1'
 					if r.phase>10;in.doNegation = false;tM.window.doNegation = false;end
 					samples{1}.alphaOut = phases(r.phase).pAlpha; % pedestal
-					[choice, ooo] = randomTriplet();
+					[choice, ooo, others] = randomTriplet();
+					cidx = choice + 1;
 					alpha = repmat(phases(r.phase).dAlpha,1,3);
 					alpha(choice) = 1;
-					samples.fixationChoice = choice + 1;
-					xChoice = sM.toDegrees(samples{choice+1}.xPositionOut,'x');
-					samples{1}.xPositionOut = xChoice; % move pedestal to fixation location of chosen sample
+					samples.fixationChoice = cidx;
+					xyChoice = [xpos(choice) ypos(choice)];
+					samples{1}.xPositionOut = xpos(choice); % move pedestal to fixation location of chosen sample
+					samples{1}.yPositionOut = ypos(choice);
 					samples{2}.filePath = images(ooo(1));
 					samples{3}.filePath = images(ooo(2));
 					samples{4}.filePath = images(ooo(3));
@@ -134,12 +150,14 @@ function startThings(in)
 					showSet(samples, 1); % show all stimuli with pedestal
 				case 'training 2'
 					samples{1}.alphaOut = phases(r.phase).pAlpha; % pedestal
-					[choice, ooo] = randomTriplet();
+					[choice, ooo, others] = randomTriplet();
+					cidx = choice + 1;
 					alpha = repmat(phases(r.phase).dAlpha,1,3);
 					alpha(choice) = 1;
-					samples.fixationChoice = choice+1;
-					xChoice = sM.toDegrees(samples{choice+1}.xPositionOut,'x');
-					samples{1}.xPositionOut = xChoice; % move pedestal to fixation location of chosen sample
+					samples.fixationChoice = cidx;
+					xyChoice = [xpos(choice) ypos(choice)];
+					samples{1}.xPositionOut = xpos(choice); % move pedestal to fixation location of chosen sample
+					samples{1}.yPositionOut = ypos(choice);
 					samples{2}.filePath = string(in.folder) + filesep + "fractals" + filesep + pfix(ooo(1));
 					samples{3}.filePath = string(in.folder) + filesep + "fractals" + filesep + pfix(ooo(2));
 					samples{4}.filePath = string(in.folder) + filesep + "fractals" + filesep + pfix(ooo(3));
@@ -160,8 +178,9 @@ function startThings(in)
 					alpha = repmat(phases(r.phase).dAlpha,1,3);
 					alpha(choice) = 1;
 					samples.fixationChoice = cidx;
-					xChoice = samples{cidx}.xPositionOut / sM.ppd;
-					samples{1}.xPositionOut = xChoice;
+					xyChoice = [xpos(choice) ypos(choice)];
+					samples{1}.xPositionOut = xpos(choice); % move pedestal to fixation location of chosen sample
+					samples{1}.yPositionOut = ypos(choice);
 					update(samples{1}); %pedestal
 					samples{1}.alphaOut = phases(r.phase).pAlpha;
 					samples{2}.alphaOut = alpha(1);
@@ -201,7 +220,7 @@ function startThings(in)
 					update(samples);
 			end
 			r.sampleNames = [string(samples{2}.currentFile) string(samples{3}.currentFile) string(samples{4}.currentFile)];
-			fprintf('\n\n===Choice: %i (cidx: %i) XPos: %.2f, OOO: %s Others: %s pfix: %s\n%s\n', choice, cidx, xChoice, mat2str(ooo), mat2str(others), mat2str(pfix), mat2str(r.sampleNames));
+			fprintf('\n\n===Choice: %i (cidx: %i) Pos: %s, OOO: %s Others: %s pfix: %s\n%s\n', choice, cidx, mat2str(xyChoice), mat2str(ooo), mat2str(others), mat2str(pfix), mat2str(r.sampleNames));
 
 			%% ============================== Wait for release
 			r = clutil.ensureTouchRelease(r, tM, sM, false);
@@ -312,11 +331,10 @@ function startThings(in)
 		rethrow(ME)
 	end
 
-
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% randomise 3 items with one selected
 	function [choice, ooo, others] = randomTriplet()
-		A = randi(3); 
+		A = randi([1 3]); 
 		B = A; while B == A; B = randi(3); end
 		ooo = [A A B];
 		ooo = ooo(randperm(3));
