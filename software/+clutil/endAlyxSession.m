@@ -1,7 +1,7 @@
 function [session, error] = endAlyxSession(r, session, result)
 	%ENDALYXSESSION End an Alyx session for the current experiment.
 	%   [session, error] = ENDALYXSESSION(r, session, result) finalizes
-	%   an Alyx session and uploads registered files to the MINIO AWS server.
+	%   an Alyx session and uploads registered files to the MINIO server.
 	%
 	%   Inputs:
 	%       r       - Struct containing the alyxManager and path information.
@@ -40,12 +40,11 @@ function [session, error] = endAlyxSession(r, session, result)
 		%% register the files to ALYX
 		[datasets, filenames] = alyx.registerALFFiles(alyx.paths, session);
 
-
 		fprintf('≣≣≣≣⊱ Added Files to ALYX Session: %s\n', alyx.sessionURL);
 		try arrayfun(@(ss)disp([ss.name ' - bytes: ' num2str(ss.file_size)]),datasets); end
 
-		%% get the ALYX UUID for each file registered
-		uuids = {};
+		%% get the ALYX dataset UUID for each file registered
+		uuids = cell(1, numel(filenames)); setQC = false;
 		if length(datasets) == length(filenames)
 			for ii = 1:length(filenames)
 				if contains(filenames{ii},datasets(ii).name)
@@ -56,12 +55,12 @@ function [session, error] = endAlyxSession(r, session, result)
 			end
 		end
 
-		%% upload the files to MINIO AWS server
+		%% upload the files to MINIO server
 		secrets = alyx.getSecrets;
 		if ~isempty(secrets.AWS_ID)
-			aws = awsManager(secrets.AWS_ID,secrets.AWS_KEY, session.dataURL);
+			store = minioManager(secrets.AWS_ID,secrets.AWS_KEY, session.dataURL);
 			bucket = lower(session.labName);
-			aws.checkBucket(bucket);
+			store.checkBucket(bucket);
 			for ii = 1:length(filenames)
 				[~,f,e] = fileparts(filenames{ii});
 				if ~isempty(uuids) && ~isempty(uuids{ii})
@@ -71,13 +70,32 @@ function [session, error] = endAlyxSession(r, session, result)
 				else
 					key = [alyx.paths.ALFKeyShort filesep f e];
 				end
-				aws.copyFiles(filenames{ii}, bucket, key);
+				try
+					store.copyFiles(filenames{ii}, bucket, key);
+					setQC = true;
+				catch
+					setQC = false;
+					warning('Failed to upload file to MINIO server, check connection and credentials!!!');
+				end
 			end
 		else
 			warning('To upload Alyx files you need to set setSecrets: AWS_ID and AWS_KEY!!!');
 			warning('YOU MUST UPLOAD MANUALLY NOW!!!');
 			error = sprintf('Could not upload files to Server!!!!!!\n');
 		end
+
+		%% if the upload was successful, set the dataset QC to PASS in ALYX
+		if setQC
+			qc = struct("qc", "PASS");
+			%% set the dataset QC to PASS if upload successful
+			for ii = 1:length(uuids)
+				if ~isempty(uuids{ii})
+					alyx.postData("datasets/"+string(uuids{ii}), qc, 'PATCH');
+				end
+			end
+			fprintf('≣≣≣≣⊱ Set ALYX QC to PASS for session: %s\n', alyx.sessionURL);
+		end
+
 	catch ME
 		getReport(ME)
 		error = sprintf('Could not register datasets for session: %s with error %s\n', alyx.sessionURL, ME.message);
