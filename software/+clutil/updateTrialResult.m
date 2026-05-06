@@ -49,7 +49,9 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 	else
 		wasEasy = "normal";
 	end
-	fprintf('===> TRIAL DIFFICULTY: %s\n', wasEasy);
+	t = sprintf('===> TRIAL DIFFICULTY: %s', wasEasy);
+	addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+	disp(t);
 
 	% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	% ================================= lets check the results:
@@ -65,7 +67,9 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			giveReward(rM, in.rewardTime);
 			dt.data.rewards = dt.data.rewards + 1;
 			dt.data.random = dt.data.random + 1;
-			fprintf('===> RANDOM REWARD :-)\n');
+			t = '===> RANDOM REWARD :-)';
+			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			disp(t);
 			beep(aM,in.correctBeep,0.1,in.audioVolume);
 			WaitSecs(0.75+rand);
 			r.randomRewardTimer = GetSecs;
@@ -73,7 +77,8 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			fprintf('===> TIMEOUT :-)\n');
 			if ~isempty(sbg); draw(sbg); end
 			drawText(sM,'TIMEOUT!');
-			flip(sM);
+			vbl = flip(sM);
+			addMessage(r.tL, [],vbl,[], "Timeout given for no touch", "getsecs", "Experimental-note");
 			WaitSecs(0.75+rand);
 		end
 
@@ -87,6 +92,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.comments = [r.comments r.summary];
 		if in.reward
 			giveReward(rM, in.rewardTime);
+			addMessage(r.tL, [],[],[], "reward given", [], "Experimental-note");
 			dt.data.rewards = dt.data.rewards + 1;
 		end
 		if in.audio; beep(aM, in.correctBeep, 0.1, in.audioVolume); end
@@ -98,7 +104,9 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 
 		animateRewardTarget(1);
 
-		fprintf('===> %i CORRECT {%s} :-) %s\n',r.result, r.summary(1), r.txt);
+		t = sprintf('===> %i CORRECT {%s} :-) %s',r.result, r.summary(1), r.txt);
+		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		disp(t);
 
 		r.phaseN = r.phaseN + 1;
 		r.trialW = 0;
@@ -130,7 +138,9 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.phaseN = r.phaseN + 1;
 		r.trialW = r.trialW + 1;
 
-		fprintf('===> %i FAIL {%s} :-( %s\n', r.result, r.summary(1), r.txt);
+		t = sprintf('===> %i FAIL {%s} :-( %s', r.result, r.summary(1), r.txt);
+		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		disp(t);
 
 		WaitSecs('YieldSecs',in.timeOut);
 		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
@@ -154,7 +164,9 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.phaseN = r.phaseN + 1;
 		r.trialW = r.trialW + 1;
 
-		fprintf('===> %i UNKNOWN {%s} :-| %s\n', r.result, r.summary(1), r.txt);
+		t = sprintf('===> %i UNKNOWN {%s} :-| %s', r.result, r.summary(1), r.txt);
+		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		disp(t);
 
 		WaitSecs('YieldSecs',in.timeOut);
 		if ~isempty(sbg); draw(sbg); else; drawBackground(sM,in.bg); end; flip(sM);
@@ -162,10 +174,28 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 	end
 	% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+	%% ================================ log trial end in timeLogger
+	%> Record the trial outcome so the timeLogger captures every trial
+	%> boundary for post-hoc analysis and HED annotation.
+	if isfield(r, 'tL') && ~isempty(r.tL)
+		if r.result == 1
+			resultLabel = 'correct';
+		elseif r.result == 0 || r.result == -5
+			resultLabel = 'incorrect';
+		else
+			resultLabel = 'unknown';
+		end
+		endMsg = sprintf('Trial %d end: %s (result=%d reaction=%.3fs)', ...
+			r.trialN, resultLabel, r.result, r.reactionTime);
+		addMessage(r.tL, [], [], [], endMsg, [], "Experimental-note");
+	end
+
 	%% ================================ logic for training staircase
 	r.phaseMax = max(r.phaseMax, r.phase);
 	if contains(lower(in.taskType), 'training') && r.trialN >= in.stepForward
-		fprintf('===> Performance: Recent: %.1f Overall: %.1f @ Phase: %i\n', r.correctRateRecent, r.correctRate, r.phase);
+		t = sprintf('===> Performance: Recent: %.1f Overall: %.1f @ Phase: %i', r.correctRateRecent, r.correctRate, r.phase);
+		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		disp(t);
 		if r.phaseN >= in.stepForward && length(dt.data.result) > in.stepForward
 			if r.correctRateRecent >= in.stepPercent
 				r.phase = r.phase + 1;
@@ -179,7 +209,9 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			r.trialW = 0;
 			if r.phase < 1; r.phase = 1; end
 			if r.phase > r.totalPhases; r.phase = r.totalPhases; end
-			fprintf('===> Step Phase update: %i\n',r.phase);
+			t = sprintf('===> Step Phase update: %i', r.phase);
+			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			disp(t);
 		end
 	end
 
@@ -197,10 +229,10 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 	if mod(r.trialN, 2)
 		tt=tic;
 		save(r.saveName, 'dt', 'r', 'in', 'tM', '-v7.3');
-		disp('=========================================');
-		fprintf('===> Saving data to %s in %.2fsecs\n', "~/ongoingTaskRun.mat", toc(tt));
-		disp('=========================================');
 		save("~/ongoingTaskRun.mat", 'dt', '-v7.3');
+		disp('=========================================');
+		fprintf('===> Saving data (and copy to %s) in %.2fsecs\n', "~/ongoingTaskRun.mat", toc(tt));
+		disp('=========================================');
 	end
 
 	%% ================================== check if a command was sent from control system

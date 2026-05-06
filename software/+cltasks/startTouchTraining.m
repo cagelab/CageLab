@@ -71,7 +71,9 @@ function startTouchTraining(in)
 		end
 		r.totalPhases = length(phases);
 		r.phases = phases;
-		fprintf('===> Total phases: %i\n', r.totalPhases);
+		t = sprintf('===> Total phases: %i', r.totalPhases);
+		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		disp(t);
 		disp(struct2table(phases));
 		disp('=====================================');
 
@@ -140,6 +142,7 @@ function startTouchTraining(in)
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			vbl = flip(sM); 
 			r.vblInit = vbl + r.sv.ifi; %start is actually next flip
+			addMessage(r.tL, [],r.vblInit,[], "Start Trial " + r.trialN, [], "Time-block");
 			syncTime(tM, r.vblInit);
 			
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -180,6 +183,7 @@ function startTouchTraining(in)
 			
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			r.vblFinal = flip(sM);
+			addMessage(r.tL, [],r.vblInit,[], "End Trial " + r.trialN, [], "Time-block");
 			
 			%% ============================== check logic of task result
 			if r.anyTouch %correct or incorrect touch
@@ -217,7 +221,7 @@ function startTouchTraining(in)
 		try writelines(sprintf("Error Touch: " + ME.Message), "~/cagelab-start.txt", WriteMode="append"); end
 		try if in.remote; r.status.updateStatusToStopped();end;end
 		try clutil.broadcastTrial(in, r, dt, false); end
-		try if IsLinux; system('xset s 300 dpms 600 0 0'); end; end
+		try if IsLinux; system('xset s 600 dpms 600 0 0'); end; end
 		try reset(target); end %#ok<*TRYNC>
 		try close(target); end
 		try close(r.fix); end

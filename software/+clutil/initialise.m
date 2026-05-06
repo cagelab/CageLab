@@ -37,6 +37,18 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	r = [];
 	r.version = clutil.version;
 
+	%% ============================ time logger for trial annotation
+	% Instantiate timeLogger to annotate task progression with timestamped
+	% messages. Stored in r.tL so all utility and task functions can call
+	% addMessage() without passing a separate handle.
+	r.tL = timeLogger('name', [prefix 'Log']);
+	r.tL.verbose = in.debug || in.verbose;
+	preAllocate(r.tL, 1e2, 1e4);
+	r.tL.startTime = r.tL.timer();
+	r.tL.addMessage([], r.tL.startTime, [], ...
+		"Session initialised: " + string(in.task) + " " + string(in.command), ...
+		"getsecs", "Experimental-note");
+
 	%% ========================== get hostname
 	[~,hname] = system('hostname');
 	hname = strip(hname);
@@ -177,6 +189,8 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	[in.alyxPath, in.sessionID, in.dateID, in.alyxName] = alyx.getALF(in.name, in.lab, true);
 	in.saveName = [ in.alyxPath filesep 'opticka.raw.' prefix in.alyxName '.mat'];
 	in.diaryName = [ in.alyxPath filesep '_matlab_diary.' prefix in.alyxName '.log'];
+	in.eventsName = [ in.alyxPath filesep 'events.table.' prefix in.alyxName '.tsv'];
+	in.jsonName = [ in.alyxPath filesep 'opticka.details.' prefix in.alyxName '.json'];
 	diary(in.diaryName);
 	r.saveName = in.saveName;
 	fprintf('===>>> CageLab Save: %s', in.saveName);
@@ -184,6 +198,18 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	r.alyxPath = in.alyxPath;
 	r.alyxName = in.alyxName;
 	r.sessionID = in.sessionID; % alyx session ID
+	% Add the derived save paths and session metadata to the timeLogger for 
+	% annotation. This creates the events.table file at the end of the session,
+	% using HED tags to identify the type of each message for downstream parsing.
+	addMessage(r.tL, [],[],[], "Derived Alyx save path: " + in.saveName, [], "Metadata");
+	addMessage(r.tL, [],[],[], "CageLab V" + clutil.version, [], "Version-identifier");
+	addMessage(r.tL, [],[],[], "Opticka V" + sM.optickaVersion, [], "Version-identifier");
+	addMessage(r.tL, [],[],[], string(in.saveName), [], "Pathname");
+	addMessage(r.tL, [],[],[], string(in.diaryName), [], "Pathname");
+	addMessage(r.tL, [],[],[], string(in.eventsName), [], "Pathname");
+	addMessage(r.tL, [],[],[], string(in.jsonName), [], "Pathname");
+	addMessage(r.tL, [],[],[], in.session.subjectName, [], "Subject-identifier");
+	addMessage(r.tL, [],[],[], in.session.researcherName, [], "Metadata");
 
 	%% ================================ log session start
 	% Append session metadata to a global CageLab start log for debugging and confirmation.

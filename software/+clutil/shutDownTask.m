@@ -67,9 +67,27 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	disp('=========================================');
 	dt.info.runInfo = r;
 	dt.info.settings = in;
+
+	%> Log session end in timeLogger before saving
+	if isfield(r, 'tL') && ~isempty(r.tL)
+		r.tL.addMessage([], [], [], sprintf('Session ended: %d trials (%d correct)', ...
+			r.trialN, sum(dt.data.result == 1)), 'getsecs');
+	end
+
 	save(r.saveName, 'dt', 'r', 'in', 'tM', 'sM', '-v7.3');
 	save("~/lastTaskRun.mat", 'dt', '-v7.3');
 	disp('Done (and a copy of touch data saved to ~/lastTaskRun.mat)!!!');
+	try
+		j = jsonencode(in);
+		writelines(j, r.jsonName, WriteMode="overwrite");
+		fprintf('#####################\n≣≣≣≣ <strong>SAVED JSON DATA to: %s</strong>\n#####################\n', r.jsonName)
+	end
+	try
+		tbl = messageTable(tL);
+		writetable(tbl, r.eventsName, 'FileType', 'text', 'Delimiter', '\t');
+		fprintf('#####################\n≣≣≣≣ <strong>SAVED TIMED EVENT DATA to: %s</strong>\n#####################\n\n', r.tableName)
+	end
+
 	if in.remote == false; try dt.plotData; end; end
 	disp(' . '); disp(' . '); disp(' . ');
 	WaitSecs('YieldSecs',0.1);

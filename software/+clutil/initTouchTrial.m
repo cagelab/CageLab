@@ -29,6 +29,13 @@ function [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
 	fprintf('===> Touch params X: %.1f Y: %.1f Size: %.1f Init: %.2f Hold: %.2f Release: %.2f\n', ...
 		tM.window.X, tM.window.Y, tM.window.radius, tM.window.init, tM.window.hold, tM.window.release);
 
+	%> Log trial initiation in the timeLogger for post-hoc analysis
+	if isfield(r, 'tL') && ~isempty(r.tL)
+		msg = sprintf('Trial %d start (loop %d phase %d stim %d)', ...
+			r.trialN + 1, r.loopN, r.phase, r.stimulus);
+		r.tL.addMessage([], [], [], msg, 'getsecs');
+	end
+
 	if r.trialN == 1; dt.data.startTime = GetSecs; end
 
 	dt.data.times.initStart(r.trialN+1) = NaN;

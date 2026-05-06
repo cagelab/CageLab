@@ -206,6 +206,9 @@ function startMatchToSample(in)
 			r.summary = sprintf("Fixation Choice: %i ", targets.fixationChoice);
 			r.store.fixationChoice = targets.fixationChoice;
 			try r.sampleNames = [string(sample.filePath) string(target.filePath) string(distractor1.filePath) string(distractor2.filePath) string(distractor3.filePath) string(distractor4.filePath)]; end
+			t = sprintf('\n\n===Choice: %s | %s', mat2str(r.summary), mat2str(r.sampleNames));
+			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			disp(t);
 
 			if contains(in.taskType, 'training')
 				targets.stimulusSets{1} = [1 2 3];
@@ -266,7 +269,9 @@ function startMatchToSample(in)
 			r.store.delayTime = r.delayTime;
 
 			%% ============================== Log the trial info
-			fprintf('\n\n===>>> %s\n', mat2str(r.summary));
+			t = sprintf('===>>> %s', mat2str(r.summary));
+			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			disp(t);
 
 			%% ============================== Initiate a trial with a touch target
 			% [r, dt, vblInit] = initTouchTrial(r, in, tM, sM, dt)
@@ -323,6 +328,7 @@ function startMatchToSample(in)
 				vbl = GetSecs;
 				r.stimOnsetTime = vbl;
 				r.vblInit = vbl + r.sv.ifi; %start is actually next flip
+				addMessage(r.tL, [],r.vblInit,[], "Start Trial " + r.trialN, getsecs, "Time-block");
 				r.store.stimOnsetTime = r.vblInit;
 				syncTime(tM, r.vblInit);
 
@@ -353,7 +359,9 @@ function startMatchToSample(in)
 				end
 			end
 			
-			r.vblFinal = GetSecs;
+			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
+			r.vblFinal = flip(sM);
+			addMessage(r.tL, [],r.vblFinal,[], "End Trial " + r.trialN, [], "Time-block");
 			r.store.vblFinal = r.vblFinal;
 			r.value = hld;
 
