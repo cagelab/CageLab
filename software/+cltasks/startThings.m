@@ -220,9 +220,9 @@ function startThings(in)
 					update(samples);
 			end
 			r.sampleNames = [string(samples{2}.currentFile) string(samples{3}.currentFile) string(samples{4}.currentFile)];
-			t = sprintf('\n\n===Choice: %i (cidx: %i) Pos: %s, OOO: %s Others: %s pfix: %s\n%s', choice, cidx, mat2str(xyChoice), mat2str(ooo), mat2str(others), mat2str(pfix), mat2str(r.sampleNames));
-			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
-			disp(t);
+			t = sprintf('===Choice: %i (cidx: %i) Pos: %s, OOO: %s Others: %s pfix: %s - %s', choice, cidx, mat2str(xyChoice), mat2str(ooo), mat2str(others), mat2str(pfix), mat2str(r.sampleNames));
+			addMessage(r.tL, r.loopN, GetSecs, [], t, [], "Experimental-note");
+			disp(".");disp("."); disp(t);
 
 			%% ============================== Wait for release
 			r = clutil.ensureTouchRelease(r, tM, sM, false);
@@ -252,7 +252,7 @@ function startThings(in)
 				vbl = flip(sM);
 				r.stimOnsetTime = vbl;
 				r.vblInit = vbl + r.sv.ifi; %start is actually next flip
-				addMessage(r.tL, [],r.vblInit,[], "Start Trial " + r.trialN, [], "Time-block");
+				addMessage(r.tL, [],r.vblInit,[], "Start Trial " + r.trialN, "getsecs", "Time-block");
 				syncTime(tM, r.vblInit);
 
 				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -288,7 +288,7 @@ function startThings(in)
 			
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			r.vblFinal = flip(sM);
-			addMessage(r.tL, [],r.vblFinal,[], "End Trial " + r.trialN, [], "Time-block");
+			addMessage(r.tL, [],r.vblFinal,[], "End Trial " + r.trialN, "getsecs", "Time-block");
 			r.value = hld;
 			
 			%% ============================== check logic of task result
@@ -320,7 +320,7 @@ function startThings(in)
 		try writelines(sprintf("Error Things: " + ME.Message), "~/cagelab-start.txt", WriteMode="append"); end
 		try if in.remote; r.status.updateStatusToStopped();end;end
 		try clutil.broadcastTrial(in, r, dt, false); end
-		try if IsLinux; system('xset s 600 dpms 600 0 0'); end; end
+		try if IsLinux && in.remote; system('xset s 600 dpms 600 0 0'); end; end
 		try reset(samples); end %#ok<*TRYNC>
 		try reset(r.fix); end
 		try reset(r.rtarget); end

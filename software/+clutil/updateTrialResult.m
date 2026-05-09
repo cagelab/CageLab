@@ -50,7 +50,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		wasEasy = "normal";
 	end
 	t = sprintf('===> TRIAL DIFFICULTY: %s', wasEasy);
-	addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+	addMessage(r.tL, r.loopN, vblEnd, [], t, "getsecs", "Experimental-note");
 	disp(t);
 
 	% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,7 +68,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			dt.data.rewards = dt.data.rewards + 1;
 			dt.data.random = dt.data.random + 1;
 			t = '===> RANDOM REWARD :-)';
-			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Experimental-note");
 			disp(t);
 			beep(aM,in.correctBeep,0.1,in.audioVolume);
 			WaitSecs(0.75+rand);
@@ -78,7 +78,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			if ~isempty(sbg); draw(sbg); end
 			drawText(sM,'TIMEOUT!');
 			vbl = flip(sM);
-			addMessage(r.tL, [],vbl,[], "Timeout given for no touch", "getsecs", "Experimental-note");
+			addMessage(r.tL, r.loopN, vbl, [], "Timeout given for no touch", "getsecs", "Experimental-note");
 			WaitSecs(0.75+rand);
 		end
 
@@ -92,7 +92,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.comments = [r.comments r.summary];
 		if in.reward
 			giveReward(rM, in.rewardTime);
-			addMessage(r.tL, [],[],[], "reward given", [], "Experimental-note");
+			addMessage(r.tL, r.loopN, GetSecs, [], "reward given", "getsecs", "Experimental-note");
 			dt.data.rewards = dt.data.rewards + 1;
 		end
 		if in.audio; beep(aM, in.correctBeep, 0.1, in.audioVolume); end
@@ -105,7 +105,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		animateRewardTarget(1);
 
 		t = sprintf('===> %i CORRECT {%s} :-) %s',r.result, r.summary(1), r.txt);
-		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Experimental-note");
 		disp(t);
 
 		r.phaseN = r.phaseN + 1;
@@ -139,7 +139,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.trialW = r.trialW + 1;
 
 		t = sprintf('===> %i FAIL {%s} :-( %s', r.result, r.summary(1), r.txt);
-		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Experimental-note");
 		disp(t);
 
 		WaitSecs('YieldSecs',in.timeOut);
@@ -165,7 +165,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		r.trialW = r.trialW + 1;
 
 		t = sprintf('===> %i UNKNOWN {%s} :-| %s', r.result, r.summary(1), r.txt);
-		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Experimental-note");
 		disp(t);
 
 		WaitSecs('YieldSecs',in.timeOut);
@@ -187,14 +187,14 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 		end
 		endMsg = sprintf('Trial %d end: %s (result=%d reaction=%.3fs)', ...
 			r.trialN, resultLabel, r.result, r.reactionTime);
-		addMessage(r.tL, [], [], [], endMsg, [], "Experimental-note");
+		addMessage(r.tL, r.loopN, GetSecs, [], endMsg, "getsecs", "Experimental-note");
 	end
 
 	%% ================================ logic for training staircase
 	r.phaseMax = max(r.phaseMax, r.phase);
 	if contains(lower(in.taskType), 'training') && r.trialN >= in.stepForward
 		t = sprintf('===> Performance: Recent: %.1f Overall: %.1f @ Phase: %i', r.correctRateRecent, r.correctRate, r.phase);
-		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Experimental-note");
 		disp(t);
 		if r.phaseN >= in.stepForward && length(dt.data.result) > in.stepForward
 			if r.correctRateRecent >= in.stepPercent
@@ -210,7 +210,7 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 			if r.phase < 1; r.phase = 1; end
 			if r.phase > r.totalPhases; r.phase = r.totalPhases; end
 			t = sprintf('===> Step Phase update: %i', r.phase);
-			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Experimental-note");
 			disp(t);
 		end
 	end

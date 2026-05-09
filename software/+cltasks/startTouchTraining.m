@@ -72,7 +72,7 @@ function startTouchTraining(in)
 		r.totalPhases = length(phases);
 		r.phases = phases;
 		t = sprintf('===> Total phases: %i', r.totalPhases);
-		addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+		addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Experimental-note");
 		disp(t);
 		disp(struct2table(phases));
 		disp('=====================================');
@@ -115,7 +115,7 @@ function startTouchTraining(in)
 			update(target);
 
 			%% ============================== initialise trial variables
-			r = clutil.initTrialVariables(r);
+			r = clutil.initTrialVariables(r); % loopN + 1 here
 			txt = '';
 			fail = false; hld = false;
 
@@ -142,7 +142,7 @@ function startTouchTraining(in)
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			vbl = flip(sM); 
 			r.vblInit = vbl + r.sv.ifi; %start is actually next flip
-			addMessage(r.tL, [],r.vblInit,[], "Start Trial " + r.trialN, [], "Time-block");
+			addMessage(r.tL, r.loopN, r.vblInit,[], "Start Trial " + r.trialN, "getsecs", "Time-block");
 			syncTime(tM, r.vblInit);
 			
 			%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,7 +183,8 @@ function startTouchTraining(in)
 			
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			r.vblFinal = flip(sM);
-			addMessage(r.tL, [],r.vblInit,[], "End Trial " + r.trialN, [], "Time-block");
+			addMessage(r.tL, r.loopN, r.vblFinal,[], "End Trial " + r.trialN, "getsecs", "Time-block");
+			addMessage(r.tL, r.loopN, r.vblInit, r.vblFinal, "Trial " + r.trialN, "getsecs", "Time-block");
 			
 			%% ============================== check logic of task result
 			if r.anyTouch %correct or incorrect touch
@@ -221,7 +222,7 @@ function startTouchTraining(in)
 		try writelines(sprintf("Error Touch: " + ME.Message), "~/cagelab-start.txt", WriteMode="append"); end
 		try if in.remote; r.status.updateStatusToStopped();end;end
 		try clutil.broadcastTrial(in, r, dt, false); end
-		try if IsLinux; system('xset s 600 dpms 600 0 0'); end; end
+		try if IsLinux && in.remote; system('xset s 600 dpms 600 0 0'); end; end
 		try reset(target); end %#ok<*TRYNC>
 		try close(target); end
 		try close(r.fix); end

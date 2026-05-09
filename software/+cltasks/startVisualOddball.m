@@ -211,7 +211,7 @@ function startVisualOddball(in)
 		try writelines(sprintf("Error VODD: " + ME.Message), "~/cagelab-start.txt", WriteMode="append"); end %#ok<*TRYNC>
 		try if in.remote; r.status.updateStatusToStopped(); end; end
 		try clutil.broadcastTrial(in, r, dt, false); end
-		try if IsLinux; system('xset s 300 dpms 600 0 0'); end; end
+		try if IsLinux && in.remote; system('xset s 600 dpms 600 0 0'); end; end
 		try reset(stims); end
 		try reset(r.fix); end
 		try reset(r.rtarget); end

@@ -117,7 +117,7 @@ function startMatchToSample(in)
 		while r.keepRunning
 
 			%% ============================== initialise trial variables
-			r = clutil.initTrialVariables(r);
+			r = clutil.initTrialVariables(r); % loopN + 1 here
 			txt = '';
 			fail = false; hld = false;
 
@@ -207,7 +207,7 @@ function startMatchToSample(in)
 			r.store.fixationChoice = targets.fixationChoice;
 			try r.sampleNames = [string(sample.filePath) string(target.filePath) string(distractor1.filePath) string(distractor2.filePath) string(distractor3.filePath) string(distractor4.filePath)]; end
 			t = sprintf('\n\n===Choice: %s | %s', mat2str(r.summary), mat2str(r.sampleNames));
-			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			addMessage(r.tL, [], GetSecs, [], t, "getsecs", "Experimental-note");
 			disp(t);
 
 			if contains(in.taskType, 'training')
@@ -270,7 +270,7 @@ function startMatchToSample(in)
 
 			%% ============================== Log the trial info
 			t = sprintf('===>>> %s', mat2str(r.summary));
-			addMessage(r.tL, [],[],[], t, [], "Experimental-note");
+			addMessage(r.tL, [], GetSecs,[], t, "getsecs", "Experimental-note");
 			disp(t);
 
 			%% ============================== Initiate a trial with a touch target
@@ -328,7 +328,7 @@ function startMatchToSample(in)
 				vbl = GetSecs;
 				r.stimOnsetTime = vbl;
 				r.vblInit = vbl + r.sv.ifi; %start is actually next flip
-				addMessage(r.tL, [],r.vblInit,[], "Start Trial " + r.trialN, getsecs, "Time-block");
+				addMessage(r.tL, [], r.vblInit,[], "Start Trial " + r.trialN, "getsecs", "Time-block");
 				r.store.stimOnsetTime = r.vblInit;
 				syncTime(tM, r.vblInit);
 
@@ -361,7 +361,8 @@ function startMatchToSample(in)
 			
 			if ~isempty(r.sbg); draw(r.sbg); else; drawBackground(sM, in.bg); end
 			r.vblFinal = flip(sM);
-			addMessage(r.tL, [],r.vblFinal,[], "End Trial " + r.trialN, [], "Time-block");
+			addMessage(r.tL, r.loopN, r.vblFinal, [], "End Trial " + r.trialN, "getsecs", "Time-block");
+			addMessage(r.tL, r.loopN, r.vblInit, r.vblFinal, "Trial " + r.trialN, "getsecs", "Time-block");
 			r.store.vblFinal = r.vblFinal;
 			r.value = hld;
 
@@ -394,7 +395,7 @@ function startMatchToSample(in)
 		try writelines(sprintf("Error MTS: " + ME.Message), "~/cagelab-start.txt", WriteMode="append"); end
 		try if in.remote; r.status.updateStatusToStopped();end;end
 		try clutil.broadcastTrial(in, r, dt, false); end
-		try if IsLinux; system('xset s 300 dpms 600 0 0'); end; end
+		try if IsLinux && in.remote; system('xset s 600 dpms 600 0 0'); end; end
 		try reset(r.rtarget); end %#ok<*TRYNC>
 		try reset(r.fix); end
 		try reset(targets); end

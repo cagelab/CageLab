@@ -45,7 +45,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	r.tL.verbose = in.debug || in.verbose;
 	preAllocate(r.tL, 1e2, 1e4);
 	r.tL.startTime = r.tL.timer();
-	r.tL.addMessage([], r.tL.startTime, [], ...
+	addMessage(r.tL, 0, r.tL.startTime, [], ...
 		"Session initialised: " + string(in.task) + " " + string(in.command), ...
 		"getsecs", "Experimental-note");
 
@@ -71,7 +71,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	
 	%% =========================== turn off sleep
 	% Disable the OS blanking display or entering power-save 
-	if IsLinux
+	if IsLinux && in.remote 
 		try system('xdotool key shift'); end
 		try system('xset dpms force on'); end
 		try system('xset -dpms'); end
@@ -201,15 +201,15 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	% Add the derived save paths and session metadata to the timeLogger for 
 	% annotation. This creates the events.table file at the end of the session,
 	% using HED tags to identify the type of each message for downstream parsing.
-	addMessage(r.tL, [],[],[], "Derived Alyx save path: " + in.saveName, [], "Metadata");
-	addMessage(r.tL, [],[],[], "CageLab V" + clutil.version, [], "Version-identifier");
-	addMessage(r.tL, [],[],[], "Opticka V" + sM.optickaVersion, [], "Version-identifier");
-	addMessage(r.tL, [],[],[], string(in.saveName), [], "Pathname");
-	addMessage(r.tL, [],[],[], string(in.diaryName), [], "Pathname");
-	addMessage(r.tL, [],[],[], string(in.eventsName), [], "Pathname");
-	addMessage(r.tL, [],[],[], string(in.jsonName), [], "Pathname");
-	addMessage(r.tL, [],[],[], in.session.subjectName, [], "Subject-identifier");
-	addMessage(r.tL, [],[],[], in.session.researcherName, [], "Metadata");
+	addMessage(r.tL, 0, GetSecs, [], "Derived Alyx save path: " + in.saveName, "", "Metadata");
+	addMessage(r.tL, 0, GetSecs, [], "CageLab V" + clutil.version, "", "Version-identifier");
+	addMessage(r.tL, 0, GetSecs, [], "Opticka V" + sM.optickaVersion, "", "Version-identifier");
+	addMessage(r.tL, 0, GetSecs, [], string(in.saveName), "", "Pathname");
+	addMessage(r.tL, 0, GetSecs, [], string(in.diaryName), "", "Pathname");
+	addMessage(r.tL, 0, GetSecs, [], string(in.eventsName), "", "Pathname");
+	addMessage(r.tL, 0, GetSecs, [], string(in.jsonName), "", "Pathname");
+	addMessage(r.tL, 0, GetSecs, [], in.session.subjectName, "", "Subject-identifier");
+	addMessage(r.tL, 0, GetSecs, [], in.session.researcherName, "", "Experimenter");
 
 	%% ================================ log session start
 	% Append session metadata to a global CageLab start log for debugging and confirmation.
@@ -245,7 +245,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	shotKey = KbName('F1');
 	RestrictKeysForKbCheck([quitKey shotKey]);
 	if ~in.debug && in.highPriority; Priority(MaxPriority(sM.win)); end
-	if ~in.debug || ~in.dummy; HideCursor; end
+	if ~in.dummy; HideCursor; end
 
 	%% ============================ run variables
 	% r aggregates runtime status used by task loops, Alyx syncing, and remote control hooks.

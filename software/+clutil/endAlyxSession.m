@@ -58,7 +58,7 @@ function [session, error] = endAlyxSession(r, session, result)
 		%% upload the files to MINIO server
 		secrets = alyx.getSecrets;
 		if ~isempty(secrets.AWS_ID)
-			store = minioManager(secrets.AWS_ID,secrets.AWS_KEY, session.dataURL);
+			store = minioManager(secrets.AWS_ID, secrets.AWS_KEY, session.dataURL);
 			bucket = lower(session.labName);
 			store.checkBucket(bucket);
 			for ii = 1:length(filenames)

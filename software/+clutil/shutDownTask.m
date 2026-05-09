@@ -67,26 +67,32 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	disp('=========================================');
 	dt.info.runInfo = r;
 	dt.info.settings = in;
+	try removeEmptyValues(r.tL); end
 
 	%> Log session end in timeLogger before saving
 	if isfield(r, 'tL') && ~isempty(r.tL)
-		r.tL.addMessage([], [], [], sprintf('Session ended: %d trials (%d correct)', ...
-			r.trialN, sum(dt.data.result == 1)), 'getsecs');
+		r.tL.addMessage(r.loopN, GetSecs, [], sprintf('Session ended: %d trials (%d correct)', ...
+			r.trialN, cor), "getsecs", "Metadata");
 	end
 
 	save(r.saveName, 'dt', 'r', 'in', 'tM', 'sM', '-v7.3');
 	save("~/lastTaskRun.mat", 'dt', '-v7.3');
 	disp('Done (and a copy of touch data saved to ~/lastTaskRun.mat)!!!');
+
+	j = '';
 	try
+		in.alyx = []; in.zmq = []; in.alyxLink = [];
 		j = jsonencode(in);
-		writelines(j, r.jsonName, WriteMode="overwrite");
+		writelines(j, in.jsonName, WriteMode="overwrite");
 		fprintf('#####################\n≣≣≣≣ <strong>SAVED JSON DATA to: %s</strong>\n#####################\n', r.jsonName)
 	end
+
 	try
-		tbl = messageTable(tL);
-		writetable(tbl, r.eventsName, 'FileType', 'text', 'Delimiter', '\t');
+		tbl = messageTable(r.tL);
+		writetable(tbl, in.eventsName, 'FileType', 'text', 'Delimiter', '\t');
 		fprintf('#####################\n≣≣≣≣ <strong>SAVED TIMED EVENT DATA to: %s</strong>\n#####################\n\n', r.tableName)
 	end
+
 
 	if in.remote == false; try dt.plotData; end; end
 	disp(' . '); disp(' . '); disp(' . ');
@@ -101,6 +107,15 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 		else
 			[in.session, success] = clutil.initAlyxSession(r, in.session);
 		end
+
+		if ~isempty(j)
+			d = struct("n_trials", r.trialN, "n_correct_trials", cor, "json", string(j));
+			r.alyx.postData("sessions/" + in.session.sessionID, d, 'patch');
+		else
+			d = struct("n_trials", r.trialN,"n_correct_trials",cor);
+			r.alyx.postData("sessions/" + in.session.sessionID, d,'patch');
+		end
+
 		if success
 			[in.session, err] = clutil.endAlyxSession(r, in.session, "PASS");
 		else
@@ -117,6 +132,6 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 		writelines(["Alyx Error: " + err, " "], "~/cagelab-start.txt", WriteMode="append");
 		error(err);
 	end
-	if IsLinux; try system('xset s 300 dpms 900 0 0'); end; end
+	if IsLinux && in.remote; try system('xset s 600 dpms 900 0 0'); end; end
 		
 end

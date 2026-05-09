@@ -40,12 +40,18 @@ function [session, success] = initAlyxSession(r, session)
 		success = true;
 		session.initialised = true;
 		session.sessionURL = url;
-		fprintf('≣≣≣≣⊱ Alyx File Path: %s \n\t  Alyx URL: %s...\n', alyx.paths.ALFPath, session.sessionURL);
+		id = split(url, '/');
+		session.sessionID = id{end};
+		t = sprintf('≣≣≣≣⊱ Alyx File Path: %s -- Alyx URL: %s...', alyx.paths.ALFPath, session.sessionURL);
+		addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Metadata");
+		disp(t);
 	else
 		session.sessionURL = '';
 		session.initialised = false;
 		success = false;
-		warning('≣≣≣≣⊱ Failed to init Alyx File Path: %s\n',alyx.paths.ALFPath);
+		t = sprintf('≣≣≣≣⊱ Failed to initialize Alyx session %s for subject %s in lab %s', alyx.paths.ALFPath, session.subjectName, session.labName);
+		addMessage(r.tL, r.loopN, GetSecs, [], t, "getsecs", "Metadata");
+		warning(t);
 	end
 	
 end
