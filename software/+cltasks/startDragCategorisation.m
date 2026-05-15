@@ -132,7 +132,7 @@ function startDragCategorisation(in)
 		end % while keepRunning
 
 		target = [];
-		clutil.shutDownTask(s, sbg, fix, set, target, rtarget, tM, rM, saveName, dt, in, r);
+		clutil.endTask(s, sbg, fix, set, target, rtarget, tM, rM, saveName, dt, in, r);
 
 	catch ME
 		getReport(ME)

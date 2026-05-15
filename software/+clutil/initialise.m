@@ -186,16 +186,16 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	alyx.subject = in.session.subjectName;
 
 	% Derive Alyx save paths and filenames based on subject/session metadata.
-	[in.alyxPath, in.sessionID, in.dateID, in.alyxName] = alyx.getALF(in.name, in.lab, true);
-	in.saveName = [ in.alyxPath filesep 'opticka.raw.' prefix in.alyxName '.mat'];
-	in.diaryName = [ in.alyxPath filesep '_matlab_diary.' prefix in.alyxName '.log'];
-	in.eventsName = [ in.alyxPath filesep 'events.table.' prefix in.alyxName '.tsv'];
-	in.jsonName = [ in.alyxPath filesep 'opticka.details.' prefix in.alyxName '.json'];
+	[in.ALFPath, in.sessionID, in.dateID, in.alyxName] = alyx.getALF(in.name, in.lab, true);
+	in.saveName = [ in.ALFPath filesep 'opticka.raw.' prefix in.alyxName '.mat'];
+	in.diaryName = [ in.ALFPath filesep '_matlab_diary.' prefix in.alyxName '.log'];
+	in.eventsName = [ in.ALFPath filesep 'events.table.' prefix in.alyxName '.tsv'];
+	in.jsonName = [ in.ALFPath filesep 'opticka.details.' prefix in.alyxName '.json'];
 	diary(in.diaryName);
 	r.saveName = in.saveName;
 	fprintf('===>>> CageLab Save: %s', in.saveName);
 	r.alyx = alyx; % alyx manager object
-	r.alyxPath = in.alyxPath;
+	r.ALFPath = in.ALFPath;
 	r.alyxName = in.alyxName;
 	r.sessionID = in.sessionID; % alyx session ID
 	% Add the derived save paths and session metadata to the timeLogger for 
@@ -294,7 +294,7 @@ function [sM, aM, rM, tM, r, dt, in] = initialise(in, bgName, prefix)
 	% If Alyx integration is enabled and configured to start at session
 	in.session.initialised = false;
 	if in.useAlyx && in.initAlyxAtStart
-		[in.session, success] = clutil.initAlyxSession(r, in.session);
+		[in.session, success] = clutil.initAlyxSession(alyx, in.session, r);
 		if ~success
 			error('Failed to initialise Alyx session at start of task!!!');
 		end

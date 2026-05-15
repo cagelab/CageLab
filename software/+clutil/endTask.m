@@ -1,5 +1,6 @@
-function shutDownTask(dt, in, r, sM, tM, rM, aM)
-% shutDownTask(dt, in, r, sM, tM, rM, aM)
+function endTask(dt, in, r, sM, tM, rM, aM)
+% endTask(dt, in, r, sM, tM, rM, aM)
+% end the cagelab task, save data, communicate with remote systems, and close devices
 	arguments
 		dt (1,1) touchData
 		in struct
@@ -11,7 +12,7 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	end
 	
 	%% final drawing
-	if isfield('r',' sbg') && ~isempty(r.sbg); draw(r.sbg); end
+	if isfield(r,'sbg') && ~isempty(r.sbg); draw(r.sbg); end
 	drawTextNow(sM, 'FINISHED!');
 
 	%% ================================== broadcast final data & change status for cogmoteGO
@@ -24,11 +25,11 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	try RestrictKeysForKbCheck([]); end
 	try ListenChar(0); Priority(0); ShowCursor; end %#ok<*TRYNC>
 	try touchManager.enableTouchDevice(tM.deviceName, "disable"); end
-	if isfield('r',' sbg') && ~isempty(r.sbg); try reset(r.sbg); end; end
-	if isfield('r', 'fix') && ~isempty(r.fix); try reset(r.fix); end; end
-	if isfield('r', 'set') && ~isempty(r.set); try reset(r.set); end; end
-	if isfield('r', 'target') && ~isempty(r.target); try reset(r.target); end; end
-	if isfield('r', 'rtarget') && ~isempty(r.rtarget); try reset(r.rtarget); end; end
+	if isfield(r, 'sbg') && ~isempty(r.sbg); try reset(r.sbg); end; end
+	if isfield(r, 'fix') && ~isempty(r.fix); try reset(r.fix); end; end
+	if isfield(r, 'set') && ~isempty(r.set); try reset(r.set); end; end
+	if isfield(r, 'target') && ~isempty(r.target); try reset(r.target); end; end
+	if isfield(r, 'rtarget') && ~isempty(r.rtarget); try reset(r.rtarget); end; end
 	
 	%% ================================== reset communication interfaces
 	in.zmq = [];
@@ -50,11 +51,11 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 		disp('==================================================');
 		tVol = (9.38e-4 * in.rewardTime) * dt.data.rewards;
 		fVol = (9.38e-4 * in.rewardTime) * dt.data.random;
-		cor = sum(dt.data.result==1);
+		nCorrect = sum(dt.data.result==1);
 		incor = sum(dt.data.result~=1);
 		fprintf('  Total Loops: %i\n', r.loopN);
 		fprintf('  Total Trials: %i\n', r.trialN);
-		fprintf('  Correct Trials: %i\n', cor);
+		fprintf('  Correct Trials: %i\n', nCorrect);
 		fprintf('  Incorrect Trials: %i\n', incor);
 		fprintf('  Free Rewards: %i\n', dt.data.random);
 		fprintf('  Correct Volume: %.2f ml\n', tVol);
@@ -72,25 +73,25 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 	%> Log session end in timeLogger before saving
 	if isfield(r, 'tL') && ~isempty(r.tL)
 		r.tL.addMessage(r.loopN, GetSecs, [], sprintf('Session ended: %d trials (%d correct)', ...
-			r.trialN, cor), "getsecs", "Metadata");
+			r.trialN, nCorrect), "getsecs", "Metadata");
 	end
 
 	save(r.saveName, 'dt', 'r', 'in', 'tM', 'sM', '-v7.3');
 	save("~/lastTaskRun.mat", 'dt', '-v7.3');
 	disp('Done (and a copy of touch data saved to ~/lastTaskRun.mat)!!!');
 
-	j = '';
+	j = "";
 	try
 		in.alyx = []; in.zmq = []; in.alyxLink = [];
 		j = jsonencode(in);
 		writelines(j, in.jsonName, WriteMode="overwrite");
-		fprintf('#####################\n≣≣≣≣ <strong>SAVED JSON DATA to: %s</strong>\n#####################\n', r.jsonName)
+		fprintf('=========================================\n≣≣≣≣ <strong>SAVED JSON DATA to: %s</strong>\n=========================================\n', r.jsonName)
 	end
 
 	try
 		tbl = messageTable(r.tL);
 		writetable(tbl, in.eventsName, 'FileType', 'text', 'Delimiter', '\t');
-		fprintf('#####################\n≣≣≣≣ <strong>SAVED TIMED EVENT DATA to: %s</strong>\n#####################\n\n', r.tableName)
+		fprintf('=========================================\n≣≣≣≣ <strong>SAVED TIMED EVENT DATA to: %s</strong>\n=========================================\n\n', r.tableName)
 	end
 
 
@@ -108,25 +109,17 @@ function shutDownTask(dt, in, r, sM, tM, rM, aM)
 			[in.session, success] = clutil.initAlyxSession(r, in.session);
 		end
 
-		if ~isempty(j)
-			d = struct("n_trials", r.trialN, "n_correct_trials", cor, "json", string(j));
-			r.alyx.postData("sessions/" + in.session.sessionID, d, 'patch');
-		else
-			d = struct("n_trials", r.trialN,"n_correct_trials",cor);
-			r.alyx.postData("sessions/" + in.session.sessionID, d,'patch');
-		end
-
 		if success
-			[in.session, err] = clutil.endAlyxSession(r, in.session, "PASS");
+			[in.session, err] = clutil.endAlyxSession(r.alyx, in.session, "PASS", r.trialN, nCorrect, j);
 		else
-			err = "Could not initialize Alyx session.";
+			err = "Could not finalise Alyx session.";
 		end
 	end
 
 	%% ================================== wrap up
 	% wrap up
 	diary off
-	r.comments(end+1) = "Shut down task.";
+	r.comments(end+1) = "End task.";
 	if err ~= ""
 		r.comments(end+1) = "Alyx Error: " + err;
 		writelines(["Alyx Error: " + err, " "], "~/cagelab-start.txt", WriteMode="append");

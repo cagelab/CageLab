@@ -1,20 +1,26 @@
-function [session, error] = endAlyxSession(r, session, result)
+function [session, error] = endAlyxSession(alyx, session, result, nTrials, nCorrect, json)
 	%ENDALYXSESSION End an Alyx session for the current experiment.
 	%   [session, error] = ENDALYXSESSION(r, session, result) finalizes
 	%   an Alyx session and uploads registered files to the MINIO server.
 	%
 	%   Inputs:
-	%       r       - Struct containing the alyxManager and path information.
+	%       alyx    - alyxManager.
 	%       session - Struct containing session metadata (subject, lab, etc.).
 	%       result  - String indicating the result of the experiment (e.g., "PASS", "FAIL").
+	%       nTrials - Number of trials conducted in the session.
+	%       nCorrect - Number of correct trials in the session.
+	%       json    - JSON string containing additional session data.
 	%
 	%   Outputs:
 	%       session - Updated session struct with finalization status and URL.
 	%       error   - String containing any error messages.
 	arguments (Input)
-		r struct
+		alyx alyxManager
 		session struct
 		result string = "FAIL"
+		nTrials double = NaN
+		nCorrect double = NaN
+		json string = ""
 	end
 
 	arguments (Output)
@@ -24,12 +30,11 @@ function [session, error] = endAlyxSession(r, session, result)
 
 	if ~session.useAlyx; return; end
 
-	alyx = r.alyx;
 	error = '';
 
 	%% close the session
 	fprintf('≣≣≣≣⊱ Closing ALYX Session: %s\n', alyx.sessionURL);
-	finalisedSession = alyx.closeSession('', result);
+	finalisedSession = alyx.closeSession('', result, nTrials, nCorrect, json);
 	if isempty(finalisedSession)
 		error = 'Failed to finalise ALYX session!';
 		return;
@@ -39,6 +44,11 @@ function [session, error] = endAlyxSession(r, session, result)
 	try
 		%% register the files to ALYX
 		[datasets, filenames] = alyx.registerALFFiles(alyx.paths, session);
+
+		if numel(filenames)>0 && isempty(datasets)
+			error = "registerALFFiles FAILED!!!!!!!";
+			return
+		end
 
 		fprintf('≣≣≣≣⊱ Added Files to ALYX Session: %s\n', alyx.sessionURL);
 		try arrayfun(@(ss)disp([ss.name ' - bytes: ' num2str(ss.file_size)]),datasets); end

@@ -238,7 +238,6 @@ function [dt, r] = updateTrialResult(in, dt, r, sM, tM, rM, aM)
 	%% ================================== check if a command was sent from control system
 	r = clutil.checkMessages(r);
 
-	
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%% ================================== SUBFUNCTIONS
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

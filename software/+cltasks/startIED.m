@@ -270,8 +270,8 @@ function startIED(in)
 		end % while keepRunning
 		
 		%% ================================ Shut down session
-		% shutDownTask(dt, in, r, sM, tM, rM, aM)
-		clutil.shutDownTask(dt, in, r, sM, tM, rM, aM);
+		% endTask(dt, in, r, sM, tM, rM, aM)
+		clutil.endTask(dt, in, r, sM, tM, rM, aM);
 
 	catch ME
 		getReport(ME)

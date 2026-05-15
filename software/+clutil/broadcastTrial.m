@@ -11,11 +11,11 @@ function broadcastTrial(in, r, dt, isRunning)
 	end
 
 	tdata = [];
-	sid = split(r.alyxPath, filesep);
+	sid = split(r.ALFPath, filesep);
 	if length(sid) >= 3
 		sid = string(join(sid(end-2:end),filesep));
 	else
-		sid = r.alyxPath;
+		sid = r.ALFPath;
 	end
 
 	try
