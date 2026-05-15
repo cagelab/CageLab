@@ -11,6 +11,8 @@ function [in, keepRunning] = checkMessages(in)
 		keepRunning logical
 	end
 
+	keepRunning = true;
+
 	if isstruct(in) && isfield(in,'zmq') && isa(in.zmq,'jzmqConnection') && poll(in.zmq, 'in')
 		[cmd, dat] = receiveCommand(in.zmq, false);
 		if ischar(cmd); cmd = string(cmd); end
